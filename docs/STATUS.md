@@ -37,8 +37,19 @@ Last updated: 2026-11-26
 ## Pending
 
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
-- Code Connect mappings (Figma -> React)
-- Step 5 verification: design critique, accessibility review, Lighthouse mobile, Playwright 360/1440
+- Code Connect: blocked by the Figma plan (needs a Dev/Full seat on Organization). Mapping table is
+  ready in `docs/design-system.md`.
+- Add Playwright and Lighthouse CI to the pipeline
+
+## Verification (26 Nov 2026, production build, local)
+
+- Lighthouse mobile, 3 runs (simulated throttling): Performance 93–95, Accessibility 100, Best
+  Practices 100, SEO 100. FCP 0.9 s, LCP 1.9–2.7 s, TBT 170–230 ms, CLS 0. LCP is mostly React
+  hydration on the simulated slow CPU; observed (unthrottled) LCP equals FCP.
+- Playwright at 360 and 1440 (and 360 with reduced motion): no horizontal overflow, no console
+  errors, all revealed content ends fully visible, axe-core WCAG 2.1 AA: 0 violations, keyboard
+  order correct with visible focus, mobile menu traps focus and closes on Escape, organiser email
+  absent from the HTML.
 - CI steps still to add as their features land: Playwright, Lighthouse CI, Semgrep, ZAP baseline
 
 ## Known issues and notes
