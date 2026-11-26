@@ -34,6 +34,15 @@ Last updated: 2026-11-26
     `src/components/motion` (Motion 14 + CSS keyframes and a CSS scroll-driven timeline rail)
   - Skip link, 404 and error pages; contact email only revealed on click
 
+- **Step 5, Supabase schema** (ADR `docs/adr/0001-registration-database.md`)
+  - Tables `teams`, `team_members`, `contact_messages`, view `admin_registrations`; private
+    `event_settings` (team cap, currently none) and `admin_allowlist`
+  - All writes go through `register_team` (service role only); `anon` and `authenticated` have no
+    write access; allow-listed admins read through RLS
+  - Supabase advisors: 0 security and 0 performance findings; rule and access test
+    `supabase/tests/registration_rules.sql`: 23/23 pass
+  - Types in `src/lib/supabase/database.types.ts` (generated, excluded from ESLint)
+
 ## Pending
 
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
@@ -53,6 +62,13 @@ Last updated: 2026-11-26
 - CI steps still to add as their features land: Playwright, Lighthouse CI, Semgrep, ZAP baseline
 
 ## Known issues and notes
+
+- Database: before registration opens, restart the team reference counter (test runs use up
+  numbers): `alter table public.teams alter column seq restart with 1;` when the table is empty.
+- Database: the team cap (`event_full`) path is not yet tested; cover it in the registration
+  route tests. Team cap number is TODO (Revanth to confirm).
+- Supabase free projects pause after a week of inactivity: keep `FinForge_2027` active or upgrade
+  before registration opens.
 
 - ESLint stays on v9: Next's bundled React, import and jsx-a11y plugins don't support ESLint 10 yet.
 - TypeScript stays on 5.x: typescript-eslint doesn't support TypeScript 7 yet.

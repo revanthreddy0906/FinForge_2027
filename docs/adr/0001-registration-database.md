@@ -1,6 +1,6 @@
 # ADR-0001: Registration database design
 
-**Status:** Proposed
+**Status:** Accepted (2026-11-26)
 **Date:** 2026-11-26
 **Deciders:** Revanth (FinFoundry)
 
@@ -164,10 +164,26 @@ and per-member check-in get harder. Rejected.
 - Revisit: the team cap number, any extra fields (tracks, year of study, T-shirt size), and a
   data-retention date for deleting personal data after the event.
 
+## Implementation notes (2026-11-26)
+
+- Revanth's answers: no team cap for now (`max_teams` null), no extra fields, one team per person,
+  one admin email.
+- `event_settings` and `admin_allowlist` live in a `private` schema that the Data API does not
+  expose, with explicit restrictive deny policies for `anon` and `authenticated`.
+- This project does not auto-grant Data API privileges on new tables, so `service_role` has
+  explicit grants: select and insert on `teams` and `team_members`, select, insert and update on
+  `contact_messages`, select on `admin_registrations`. No delete anywhere through the API.
+- Migrations: `supabase/migrations/` (4 files, applied in this order). Supabase advisors
+  (security and performance): 0 findings.
+- Rule and access test: `supabase/tests/registration_rules.sql`, 23 of 23 checks pass. The team
+  cap (`event_full`) path is not yet covered, because the connector cannot confirm the `update`
+  statement the test needs; it will be covered by the registration route's integration tests.
+
 ## Action items
 
-1. [ ] Revanth confirms the open questions in the plan (cap, fields, one team per person, admins).
-2. [ ] Write and apply migrations; run `get_advisors` until clean.
-3. [ ] Test constraints and `register_team` with SQL (duplicate, size, cap, idempotency, RLS).
-4. [ ] Generate TypeScript types; commit.
+1. [x] Revanth confirms the open questions in the plan (cap, fields, one team per person, admins).
+2. [x] Write and apply migrations; run `get_advisors` until clean.
+3. [x] Test constraints and `register_team` with SQL (duplicate, size, idempotency, RLS). Cap
+       path still to test.
+4. [x] Generate TypeScript types; commit.
 5. [ ] Build the registration route (build-order step 6) on top of this.
