@@ -45,6 +45,8 @@ jobs:
       # database-backed flow tests are skipped and the rest still run.
       E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
       E2E_SUPABASE_SECRET_KEY: ${{ secrets.E2E_SUPABASE_SECRET_KEY }}
+      # Staging publishable key: public by design (it only grants what RLS allows).
+      E2E_SUPABASE_PUBLISHABLE_KEY: sb_publishable_TFF9Pv3CkPB9AiyArsQWGQ_29tkoq1d
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

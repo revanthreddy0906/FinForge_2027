@@ -13,7 +13,8 @@ const baseEnv = {
 
 const stagingUrl = process.env.E2E_SUPABASE_URL;
 const stagingKey = process.env.E2E_SUPABASE_SECRET_KEY;
-const hasStaging = Boolean(stagingUrl && stagingKey);
+const stagingPublishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
+const hasStaging = Boolean(stagingUrl && stagingKey && stagingPublishableKey);
 
 const desktop = devices["Desktop Chrome"];
 const mobile = { ...devices["Pixel 7"], viewport: { width: 360, height: 780 } };
@@ -34,12 +35,12 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testMatch: /(register-form|security-headers)\.spec\.ts/,
+      testMatch: /(register-form|security-headers|admin-login)\.spec\.ts/,
       use: { ...desktop, baseURL: `http://localhost:${String(NO_DB_PORT)}` },
     },
     {
       name: "mobile",
-      testMatch: /(register-form|security-headers)\.spec\.ts/,
+      testMatch: /(register-form|security-headers|admin-login)\.spec\.ts/,
       use: { ...mobile, baseURL: `http://localhost:${String(NO_DB_PORT)}` },
     },
     ...(hasStaging
@@ -52,6 +53,12 @@ export default defineConfig({
           {
             name: "mobile-staging-db",
             testMatch: /register-flow\.spec\.ts/,
+            use: { ...mobile, baseURL: `http://localhost:${String(DB_PORT)}` },
+          },
+          {
+            // One device only: the flow signs one shared test organizer in and out.
+            name: "admin-staging-db",
+            testMatch: /admin-flow\.spec\.ts/,
             use: { ...mobile, baseURL: `http://localhost:${String(DB_PORT)}` },
           },
         ]
@@ -68,6 +75,7 @@ export default defineConfig({
         ...baseEnv,
         SUPABASE_URL: "http://127.0.0.1:9/no-database",
         SUPABASE_SECRET_KEY: "e2e-no-database-configured",
+        SUPABASE_PUBLISHABLE_KEY: "e2e-no-database-publishable",
       },
     },
     ...(hasStaging
@@ -81,6 +89,7 @@ export default defineConfig({
               ...baseEnv,
               SUPABASE_URL: stagingUrl ?? "",
               SUPABASE_SECRET_KEY: stagingKey ?? "",
+              SUPABASE_PUBLISHABLE_KEY: stagingPublishableKey ?? "",
             },
           },
         ]
