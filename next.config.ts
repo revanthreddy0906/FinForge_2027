@@ -7,28 +7,18 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // The Content-Security-Policy is per request (it carries a nonce) and is set in src/proxy.ts.
   headers() {
-    return Promise.resolve([{ source: "/:path*", headers: [...securityHeaders] }]);
-  },
-  reactStrictMode: true,
-  headers() {
+    const consoleHeaders = [
+      // Organizer console: never indexed, never cached by shared caches.
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      { key: "Cache-Control", value: "private, no-store" },
+    ];
     return Promise.resolve([
-      {
-        // Organizer console: never indexed, never cached by shared caches.
-        source: "/admin/:path*",
-        headers: [
-          { key: "X-Robots-Tag", value: "noindex, nofollow" },
-          { key: "Cache-Control", value: "private, no-store" },
-        ],
-      },
-      {
-        source: "/admin",
-        headers: [
-          { key: "X-Robots-Tag", value: "noindex, nofollow" },
-          { key: "Cache-Control", value: "private, no-store" },
-        ],
-      },
+      { source: "/:path*", headers: [...securityHeaders] },
+      { source: "/admin", headers: consoleHeaders },
+      { source: "/admin/:path*", headers: consoleHeaders },
     ]);
   },
+  reactStrictMode: true,
   turbopack: {
     // Pin the workspace root so a stray lockfile higher up the tree is never picked up.
     root: __dirname,
