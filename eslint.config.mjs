@@ -1,18 +1,40 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import prettier from "eslint-config-prettier/flat";
+import security from "eslint-plugin-security";
+import tseslint from "typescript-eslint";
 
-const eslintConfig = defineConfig([
+export default defineConfig([
+  globalIgnores([".next/**", "out/**", "build/**", "coverage/**", "next-env.d.ts"]),
+
+  // Next.js rules (React, hooks, a11y, Core Web Vitals).
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-]);
 
-export default eslintConfig;
+  // typescript-eslint strictest presets, with type information.
+  {
+    files: ["**/*.{ts,tsx,mts,cts}"],
+    extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/ban-ts-comment": [
+        "error",
+        { "ts-ignore": "allow-with-description", minimumDescriptionLength: 10 },
+      ],
+    },
+  },
+
+  // Security lint rules for Node/JS code.
+  security.configs.recommended,
+
+  // Must stay last: turns off rules that conflict with Prettier formatting.
+  prettier,
+]);
