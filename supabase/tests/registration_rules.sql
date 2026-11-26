@@ -73,10 +73,28 @@ begin
   reset role;
 
   insert into private.admin_allowlist (email) values ('organizer@example.com');
-  perform set_config('request.jwt.claims', '{"email":"Organizer@Example.com","role":"authenticated"}', true);
+  perform set_config('request.jwt.claims', '{"email":"Organizer@Example.com","role":"authenticated","aal":"aal1"}', true);
   set local role authenticated;
   select count(*) into n from public.admin_registrations;
-  out := out || format('%s allow-listed admin sees %s member rows in export view', case when n = 3 then 'ok  ' else 'FAIL' end, n) || chr(10);
+  out := out || format('%s allow-listed admin without the authenticator step (aal1) sees %s rows', case when n = 0 then 'ok  ' else 'FAIL' end, n) || chr(10);
+  out := out || format('%s current_user_is_admin() is false at aal1', case when not public.current_user_is_admin() then 'ok  ' else 'FAIL' end) || chr(10);
+  reset role;
+
+  perform set_config('request.jwt.claims', '{"email":"Organizer@Example.com","role":"authenticated","aal":"aal2"}', true);
+  set local role authenticated;
+  select count(*) into n from public.admin_registrations where reference = r.reference;
+  out := out || format('%s allow-listed admin with the authenticator step (aal2) sees %s member rows in export view', case when n = 3 then 'ok  ' else 'FAIL' end, n) || chr(10);
+  out := out || format('%s current_user_is_admin() is true at aal2', case when public.current_user_is_admin() then 'ok  ' else 'FAIL' end) || chr(10);
+  reset role;
+
+  perform set_config('request.jwt.claims', '{"email":"stranger@example.com","role":"authenticated","aal":"aal2"}', true);
+  set local role authenticated;
+  select count(*) into n from public.admin_registrations;
+  out := out || format('%s non-admin with the authenticator step sees %s rows', case when n = 0 then 'ok  ' else 'FAIL' end, n) || chr(10);
+  reset role;
+
+  set local role anon;
+  out := out || pg_temp.expect_err('anon cannot call current_user_is_admin', 'select public.current_user_is_admin()', '42501');
   reset role;
 
   out := out || format('%s no API role has write privileges on teams/members (insert/update/delete)', case when not exists (

@@ -135,6 +135,7 @@ export type Database = {
       };
     };
     Functions: {
+      current_user_is_admin: { Args: never; Returns: boolean };
       register_team: {
         Args: { payload: Json };
         Returns: {
