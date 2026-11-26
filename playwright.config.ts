@@ -34,12 +34,12 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testMatch: /register-form\.spec\.ts/,
+      testMatch: /(register-form|security-headers)\.spec\.ts/,
       use: { ...desktop, baseURL: `http://localhost:${String(NO_DB_PORT)}` },
     },
     {
       name: "mobile",
-      testMatch: /register-form\.spec\.ts/,
+      testMatch: /(register-form|security-headers)\.spec\.ts/,
       use: { ...mobile, baseURL: `http://localhost:${String(NO_DB_PORT)}` },
     },
     ...(hasStaging
