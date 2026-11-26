@@ -91,13 +91,19 @@ export async function authClientFromCookies(): Promise<SupabaseClient<Database> 
   const jar = await cookies();
   const access = jar.get(ACCESS_COOKIE)?.value;
   const refresh = jar.get(REFRESH_COOKIE)?.value;
-  if (!access || !refresh) return null;
+  if (!access || !refresh) {
+    console.warn("[admin] session cookies missing", { access: !!access, refresh: !!refresh });
+    return null;
+  }
   const client = authClient();
   const { data, error } = await client.auth.setSession({
     access_token: access,
     refresh_token: refresh,
   });
-  if (error || !data.session) return null;
+  if (error || !data.session) {
+    console.warn("[admin] stored session rejected", { code: error?.code, status: error?.status });
+    return null;
+  }
   return client;
 }
 

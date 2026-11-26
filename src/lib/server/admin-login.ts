@@ -74,9 +74,13 @@ async function prepareFactor(session: {
 async function verifyCode(factorId: string, code: string): Promise<CodeOutcome> {
   try {
     const client = await authClientFromCookies();
-    if (!client) return { ok: false, reason: "session-lost" };
+    if (!client) {
+      console.warn("[admin] code check: no usable session in the cookies");
+      return { ok: false, reason: "session-lost" };
+    }
     const { data, error } = await client.auth.mfa.challengeAndVerify({ factorId, code });
     if (error) {
+      logError("code check", error);
       if (
         error.code === "mfa_verification_failed" ||
         error.status === 422 ||
@@ -87,7 +91,6 @@ async function verifyCode(factorId: string, code: string): Promise<CodeOutcome> 
       if (error.status === 401 || error.status === 403 || error.status === 404) {
         return { ok: false, reason: "session-lost" };
       }
-      logError("code check", error);
       return { ok: false, reason: "unavailable" };
     }
     return { ok: true, session: data };

@@ -120,6 +120,12 @@ export async function codeStep(
     if (previous.step === "verify" && UUID.test(previous.factorId)) {
       return { step: "verify", factorId: previous.factorId, error };
     }
+    // Only shapes and lengths are logged, never the values.
+    console.warn("[admin] code step: previous state not reusable", {
+      step: previous.step,
+      qrLength: previous.step === "enroll" ? previous.qrCode.length : undefined,
+      secretLength: previous.step === "enroll" ? previous.secret.length : undefined,
+    });
     return { step: "password", error: loginCopy.sessionLost };
   };
 
