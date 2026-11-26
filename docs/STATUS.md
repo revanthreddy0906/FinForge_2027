@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 2026-11-26
+Last updated: 2026-11-27
 
 ## Done
 
@@ -96,6 +96,28 @@ Last updated: 2026-11-26
     with action + hostname checks, Upstash rate limit, saved to the staging database (FF27-0043,
     2 members)
 
+- **Registration fee with Razorpay** (`docs/adr/0004-registration-payments.md`)
+  - ₹699 per member, computed on the server from the saved member count; Standard Checkout
+    pop-up after the team is saved; one order per team, reused on retries
+  - Unpaid teams hold their name and emails for 30 minutes; expired holds are released when a
+    new registration needs them; late payments on released teams are listed for refund in the
+    organizer console
+  - `/api/payments/verify` (signature + payment fetched from Razorpay) and
+    `/api/payments/webhook` (signed `payment.captured` / `order.paid`), both idempotent
+  - CSP: Razorpay origins and its one fixed `<style>` hash only on `/register`; COOP
+    `same-origin-allow-popups` on `/register`
+  - Organizer console: payment status per team, paid filter, paid count and total collected,
+    payment columns in the CSV, "Payments to refund" list
+  - Tests: SQL rules on staging (payments 29/29, registration 28/28); Vitest (fees, signatures,
+    schemas, start/confirm flow, register mapping, console labels); Playwright staging flow with
+    a local Razorpay stand-in (pay, cancel, fail, reload-resume, held name)
+  - Real test-mode run on a staging preview (27 Nov 2026, Chrome desktop and 360 px phone):
+    netbanking success (team confirmed), bank failure (Razorpay retry screen, team stays
+    unpaid), cancelled pop-up, lost confirmation recovered by the signed webhook and by
+    "Check payment", replayed webhooks and checks (no double marking), forged signatures and a
+    payment swapped onto another order (rejected)
+  - Migrations applied to staging only; production waits for Revanth's go-ahead
+
 ## Pending
 
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
@@ -115,6 +137,13 @@ Last updated: 2026-11-26
 - CI steps still to add as their features land: Playwright, Lighthouse CI, Semgrep, ZAP baseline
 
 ## Known issues and notes
+
+- Payments: the Razorpay webhook isn't created in the dashboard yet (Revanth). Previews are behind
+  Vercel Authentication, so a staging webhook URL needs the protection bypass query parameter.
+- Payments: test card payments couldn't be completed by the headless test browser (Continue
+  does nothing); netbanking test payments work. Try the test card by hand once.
+- Rate limits: the form allows 5 registrations a minute per IP. Teams on one campus Wi-Fi share
+  an IP; check this in the load test.
 
 - Database: before registration opens, restart the team reference counter (test runs use up
   numbers): `alter table public.teams alter column seq restart with 1;` when the table is empty.

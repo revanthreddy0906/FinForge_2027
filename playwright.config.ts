@@ -11,6 +11,14 @@ const baseEnv = {
   FINFORGE_ALLOW_MEMORY_RATE_LIMIT: "1",
 };
 
+/** Fake Razorpay keys for the local stand-in (e2e/razorpay-stub.mjs). Not real credentials. */
+const RAZORPAY_STUB_PORT = 3199;
+const razorpayEnv = {
+  RAZORPAY_KEY_ID: "rzp_test_e2estub0000",
+  RAZORPAY_KEY_SECRET: "e2e-stub-secret-not-a-real-key",
+  RAZORPAY_STUB_PORT: String(RAZORPAY_STUB_PORT),
+};
+
 const stagingUrl = process.env.E2E_SUPABASE_URL;
 const stagingKey = process.env.E2E_SUPABASE_SECRET_KEY;
 const stagingPublishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
@@ -81,6 +89,12 @@ export default defineConfig({
     ...(hasStaging
       ? [
           {
+            command: "node e2e/razorpay-stub.mjs",
+            url: `http://127.0.0.1:${String(RAZORPAY_STUB_PORT)}/health`,
+            reuseExistingServer: !process.env.CI,
+            env: razorpayEnv,
+          },
+          {
             command: `npx next start -p ${String(DB_PORT)}`,
             port: DB_PORT,
             timeout: 60_000,
@@ -90,6 +104,8 @@ export default defineConfig({
               SUPABASE_URL: stagingUrl ?? "",
               SUPABASE_SECRET_KEY: stagingKey ?? "",
               SUPABASE_PUBLISHABLE_KEY: stagingPublishableKey ?? "",
+              ...razorpayEnv,
+              RAZORPAY_API_BASE: `http://127.0.0.1:${String(RAZORPAY_STUB_PORT)}`,
             },
           },
         ]

@@ -102,7 +102,7 @@ test("shows teams, searches, exports CSV and signs out", async ({ page }) => {
   for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
   const csv = Buffer.concat(chunks).toString("utf8");
   expect(csv.replace(/^﻿/, "").split("\r\n")[0]).toBe(
-    '"Reference","Team","College","Status","Registered (IST)","Member #","Role","Name","Email","Leader mobile"',
+    '"Reference","Team","College","Status","Registered (IST)","Member #","Role","Name","Email","Leader mobile","Payment","Amount (INR)","Razorpay payment ID","Paid (IST)"',
   );
   expect(csv).toMatch(/"FF27-\d{4,}"/);
 

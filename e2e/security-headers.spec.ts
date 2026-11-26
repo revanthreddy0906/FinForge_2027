@@ -30,7 +30,10 @@ test.describe("security headers", () => {
       expect(h["x-content-type-options"]).toBe("nosniff");
       expect(h["referrer-policy"]).toBe("strict-origin-when-cross-origin");
       expect(h["x-frame-options"]).toBe("DENY");
-      expect(h["cross-origin-opener-policy"]).toBe("same-origin");
+      // /register runs Razorpay Checkout, whose bank and UPI pop-ups report back to the page.
+      expect(h["cross-origin-opener-policy"]).toBe(
+        path === "/register" ? "same-origin-allow-popups" : "same-origin",
+      );
       for (const feature of ["camera=()", "microphone=()", "geolocation=()"]) {
         expect(h["permissions-policy"]).toContain(feature);
       }
@@ -46,7 +49,18 @@ test.describe("security headers", () => {
       expect(csp.get("base-uri")).toEqual(["'self'"]);
       expect(csp.get("form-action")).toEqual(["'self'"]);
       expect(csp.get("frame-ancestors")).toEqual(["'none'"]);
-      expect(csp.get("frame-src")).toEqual(["https://challenges.cloudflare.com"]);
+      expect(csp.get("frame-src")).toEqual(
+        path === "/register"
+          ? [
+              "https://challenges.cloudflare.com",
+              "https://api.razorpay.com",
+              "https://checkout.razorpay.com",
+            ]
+          : ["https://challenges.cloudflare.com"],
+      );
+      expect((csp.get("script-src") ?? []).includes("https://checkout.razorpay.com")).toBe(
+        path === "/register",
+      );
     });
   }
 

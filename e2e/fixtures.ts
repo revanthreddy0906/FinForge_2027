@@ -23,6 +23,32 @@ window.turnstile = {
   remove(id) { delete this._w[id]; },
 };`;
 
+/**
+ * Replaces Razorpay's checkout.js with a stand-in. open() acts on window.__rzpMode:
+ * "pay" (default) pays through the local Razorpay stub and calls the success handler,
+ * "dismiss" closes the pop-up, "fail" reports a failed payment and then closes.
+ * Payment goes through https://api.razorpay.com/e2e/pay, which the CSP allows on /register
+ * and the test intercepts below.
+ */
+const fakeCheckout = `
+window.Razorpay = function (options) {
+  const failed = [];
+  return {
+    on(name, fn) { if (name === "payment.failed") failed.push(fn); },
+    open() {
+      const mode = window.__rzpMode || "pay";
+      setTimeout(async () => {
+        if (mode === "dismiss") return options.modal.ondismiss();
+        if (mode === "fail") { failed.forEach((fn) => fn({ error: { code: "BAD_REQUEST_ERROR" } })); return options.modal.ondismiss(); }
+        const res = await fetch("https://api.razorpay.com/e2e/pay", { method: "POST", body: JSON.stringify({ order_id: options.order_id }) });
+        options.handler(await res.json());
+      }, 50);
+    },
+  };
+};`;
+
+const RAZORPAY_STUB = "http://127.0.0.1:3199";
+
 export const test = base.extend({
   // A unique client IP per test, so rate limits from one test never affect another.
   extraHTTPHeaders: async ({}, provide) => {
@@ -33,6 +59,22 @@ export const test = base.extend({
     await page.route("https://challenges.cloudflare.com/turnstile/**", (route) =>
       route.fulfill({ contentType: "text/javascript", body: fakeTurnstile }),
     );
+    await page.route("https://checkout.razorpay.com/**", (route) =>
+      route.fulfill({ contentType: "text/javascript", body: fakeCheckout }),
+    );
+    await page.route("https://api.razorpay.com/e2e/pay", async (route) => {
+      const res = await fetch(`${RAZORPAY_STUB}/test/pay`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: route.request().postData() ?? "{}",
+      });
+      await route.fulfill({
+        status: res.status,
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: await res.text(),
+      });
+    });
     await provide(page);
   },
 });
@@ -56,4 +98,11 @@ export async function fillTeam(page: Page, team: TeamDetails) {
   }
   await page.getByLabel("Mobile number").fill(team.phone);
   await page.getByRole("checkbox", { name: /privacy note/ }).check();
+}
+
+/** How the stand-in checkout behaves the next time Pay is pressed. */
+export async function setCheckoutMode(page: Page, mode: "pay" | "dismiss" | "fail") {
+  await page.evaluate((m) => {
+    (window as unknown as { __rzpMode: string }).__rzpMode = m;
+  }, mode);
 }
