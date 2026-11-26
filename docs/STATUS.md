@@ -19,17 +19,26 @@ Last updated: 2026-11-26
   - Branch protection on `main`: PRs required, the 3 CI checks must pass and be up to date,
     linear history, no force pushes or deletion; admin bypass kept for emergencies
 
-- **Step 2, design system (in progress)**
+- **Step 2, design system**
   - Art direction chosen: Secure Ledger (Bodoni Moda + Inter, teal/cream, yellow accent)
   - Figma file with variables (color, type, spacing, radius, motion), text styles, Foundations page
     and core components (see `docs/design-system.md`)
   - Tokens mirrored in `src/app/globals.css` (Tailwind v4 `@theme`) and `src/design/tokens.ts`,
     with a sync + contrast test; fonts via `next/font` (Bodoni Moda, Inter)
 
+- **Step 3, home page design**: desktop + 360px in Figma, approved. Motion is specified in
+  `docs/motion.md` and built in code (Figma motion blocked by the Starter plan's MCP call limit).
+- **Step 4, home page in code**
+  - Event facts in `src/config/event.ts` (unknowns stay `null`/TODO, nothing guessed)
+  - UI components in `src/components/ui`, sections in `src/components/home`, motion in
+    `src/components/motion` (Motion 14 + CSS keyframes and a CSS scroll-driven timeline rail)
+  - Skip link, 404 and error pages; contact email only revealed on click
+
 ## Pending
 
-- Home page and motion designs in Figma (desktop + 360px), then approval
-- React components, Code Connect and home page build (step 4)
+- Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
+- Code Connect mappings (Figma -> React)
+- Step 5 verification: design critique, accessibility review, Lighthouse mobile, Playwright 360/1440
 - CI steps still to add as their features land: Playwright, Lighthouse CI, Semgrep, ZAP baseline
 
 ## Known issues and notes
