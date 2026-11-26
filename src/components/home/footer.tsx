@@ -40,7 +40,7 @@ export function Footer() {
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    Instagram
+                    Instagram<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 </li>
               </ul>

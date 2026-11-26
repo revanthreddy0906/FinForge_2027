@@ -25,6 +25,7 @@ export function Sponsors() {
                   className="grid h-24 place-items-center rounded-sm border border-border-subtle text-label text-text-primary"
                 >
                   {s.name}
+                  <span className="sr-only"> (opens in a new tab)</span>
                 </a>
               </li>
             ))

@@ -39,6 +39,7 @@ export async function Timeline() {
                 target="_blank"
               >
                 @{event.instagram.handle}
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>{" "}
               for updates.
             </>

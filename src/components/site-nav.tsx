@@ -44,9 +44,15 @@ export function SiteNav() {
         buttonRef.current?.focus();
       }
     };
+    // Keep keyboard and screen-reader focus inside the open menu.
+    const behind = Array.from(
+      document.querySelectorAll<HTMLElement>("body > :not(header, script, next-route-announcer)"),
+    );
+    for (const el of behind) el.inert = true;
     document.documentElement.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
     return () => {
+      for (const el of behind) el.inert = false;
       document.documentElement.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
@@ -67,7 +73,7 @@ export function SiteNav() {
         aria-label="Main"
         className="mx-auto flex h-16 max-w-content items-center justify-between px-gutter md:h-20"
       >
-        <Link href="/" aria-label="FinForge 2027, home" onClick={close}>
+        <Link href="/" onClick={close}>
           <Logo />
         </Link>
         <ul className="hidden items-center gap-xl md:flex">

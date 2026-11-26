@@ -7,15 +7,17 @@ interface CardProps {
   highlight?: boolean;
 }
 
-/** Figma "Card". Hover lift applies on pointer devices only (Tailwind hover is @media (hover:hover)). */
+/**
+ * Figma "Card". Cards here are not links, so they get no hover lift: movement on hover
+ * would promise a click that does nothing. Add the Figma hover state only to linked cards.
+ */
 export function Card({ eyebrow, title, children, highlight = false }: CardProps) {
   return (
     <article
       data-reveal
       className={
-        "flex flex-col gap-md rounded-sm border bg-bg-surface p-xl transition-[transform,background-color,border-color] " +
-        "duration-(--duration-fast) ease-standard hover:bg-bg-raised motion-safe:hover:-translate-y-1 " +
-        (highlight ? "border-border-frame" : "border-border-subtle hover:border-border-strong")
+        "flex flex-col gap-md rounded-sm border bg-bg-surface p-xl " +
+        (highlight ? "border-border-frame" : "border-border-subtle")
       }
     >
       <span
