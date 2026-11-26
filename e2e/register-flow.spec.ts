@@ -38,7 +38,8 @@ test("rejects the same team name and a member already in a team", async ({ page 
     ],
   });
   await page.getByRole("button", { name: "Register team" }).click();
-  await expect(page.getByRole("alert")).toContainText("Another team already has this name");
+  // Next.js adds its own role="alert" route announcer, so target the form's summary.
+  await expect(page.locator("#form-errors")).toContainText("Another team already has this name");
 
   await page.getByLabel("Team name").fill(`Fresh ${run}`);
   await page.locator("#f-members-1-email").fill(team.members[2]?.email ?? "");
