@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { bodoni, inter } from "./fonts";
@@ -16,11 +18,26 @@ export const metadata: Metadata = {
     "FinForge 2027 is a Fraud Detection and Cybersecurity hackathon by FinFoundry in Hyderabad, March 2027.",
 };
 
+/**
+ * Vercel serves the Web Analytics and Speed Insights scripts from /_vercel/* only on its own
+ * platform, so local and CI builds (where those paths 404) leave them out.
+ */
+const onVercel = process.env.VERCEL === "1";
+
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   await connection();
   return (
     <html lang="en" className={`${bodoni.variable} ${inter.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {children}
+        {/* Cookieless, first-party (/_vercel/*) and loaded after the page; see docs/deployment.md. */}
+        {onVercel ? (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        ) : null}
+      </body>
     </html>
   );
 }

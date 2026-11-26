@@ -22,6 +22,17 @@
 - Vercel Toolbar is off for previews and production: it injects `vercel.live` scripts, frames and
   inline styles that our CSP (rightly) blocks.
 
+## Analytics
+
+- Vercel Web Analytics (`@vercel/analytics`) and Speed Insights (`@vercel/speed-insights`) are in
+  the root layout. Both are cookieless, load their script from our own origin (`/_vercel/*`) after
+  the page, and need no CSP change (the scripts are added by our nonced code, so
+  `'strict-dynamic'` allows them; data goes to `'self'`).
+- They only render when `VERCEL=1`, because `/_vercel/*` doesn't exist in local or CI builds.
+- Turn both on in the dashboard (Project > Analytics > Enable, Project > Speed Insights > Enable).
+- Bot Protection and BotID stay off: Turnstile already guards registration, and a platform bot
+  challenge would block the k6 load test.
+
 ## Environment variables
 
 | Variable                         | Production                  | Preview + Development               | Type                         |
