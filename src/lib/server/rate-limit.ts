@@ -6,14 +6,14 @@ import { serverEnv } from "./env";
 const LIMIT = 5;
 const WINDOW_MS = 60_000;
 
-let upstash: Ratelimit | undefined;
+const limiters = new Map<number, Ratelimit>();
 const memory = new Map<string, number[]>();
 
 /** In-memory sliding window for local development and tests only (one process, not shared). */
-function allowInMemory(key: string): boolean {
+function allowInMemory(key: string, limit: number): boolean {
   const now = Date.now();
   const recent = (memory.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (recent.length >= LIMIT) {
+  if (recent.length >= limit) {
     memory.set(key, recent);
     return false;
   }
@@ -23,20 +23,28 @@ function allowInMemory(key: string): boolean {
 }
 
 /**
- * 5 requests per minute per IP and action. Uses Upstash Redis when configured. In production
+ * `limit` requests (default 5) per minute per IP and action. Uses Upstash Redis when configured. In production
  * Upstash is required: without it this throws, and the caller fails closed.
  */
-export async function allowRequest(action: string, ip: string): Promise<boolean> {
+export async function allowRequest(
+  action: string,
+  ip: string,
+  limit: number = LIMIT,
+): Promise<boolean> {
   const env = serverEnv();
   const key = `${action}:${ip}`;
   if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
-    upstash ??= new Ratelimit({
-      redis: new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }),
-      limiter: Ratelimit.slidingWindow(LIMIT, "1 m"),
-      prefix: "ff27:rl",
-      analytics: false,
-    });
-    const { success } = await upstash.limit(key);
+    let limiter = limiters.get(limit);
+    if (!limiter) {
+      limiter = new Ratelimit({
+        redis: new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }),
+        limiter: Ratelimit.slidingWindow(limit, "1 m"),
+        prefix: limit === LIMIT ? "ff27:rl" : `ff27:rl${String(limit)}`,
+        analytics: false,
+      });
+      limiters.set(limit, limiter);
+    }
+    const { success } = await limiter.limit(key);
     return success;
   }
   if (
@@ -45,5 +53,5 @@ export async function allowRequest(action: string, ip: string): Promise<boolean>
   ) {
     throw new Error("Upstash rate limiting is not configured");
   }
-  return allowInMemory(key);
+  return allowInMemory(key, limit);
 }

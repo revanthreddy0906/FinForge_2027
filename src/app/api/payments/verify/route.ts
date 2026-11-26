@@ -8,6 +8,12 @@ import { confirmDeps } from "@/lib/server/payments";
 import { allowRequest } from "@/lib/server/rate-limit";
 import { razorpayEnv } from "@/lib/server/razorpay-env";
 
+/**
+ * Higher than the form's 5 a minute: these people have already paid, a college network puts many
+ * of them behind one IP, and a forged request is cheap to reject (signature check, no Razorpay call).
+ */
+const VERIFY_LIMIT_PER_MINUTE = 30;
+
 const json = (body: VerifyResponse, status = 200) =>
   NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
@@ -18,7 +24,7 @@ const json = (body: VerifyResponse, status = 200) =>
 export async function POST(request: Request) {
   const ip = await clientIp();
   try {
-    if (!(await allowRequest("payment-verify", ip))) {
+    if (!(await allowRequest("payment-verify", ip, VERIFY_LIMIT_PER_MINUTE))) {
       return json({ status: "error", message: verifyCopy.rateLimited, retry: true }, 429);
     }
   } catch {

@@ -177,7 +177,8 @@ export function PaymentStep({
       </dl>
       <p className="max-w-[40rem] text-body text-text-secondary">
         Your team is saved but not confirmed until you pay. We hold your team name and emails for{" "}
-        {event.paymentHoldMinutes} minutes. Pay with UPI, a card or net banking through Razorpay.
+        {event.paymentHoldMinutes} minutes. Pay in the Razorpay window with any method it offers
+        you, such as UPI, a card or net banking.
       </p>
 
       <div
