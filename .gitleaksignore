@@ -2,3 +2,7 @@
 # The tests now generate the UUID at runtime; these fingerprints cover the earlier commit.
 e5a1838a21d6bd6b39379225baab3987fedcfb16:src/lib/registration/schema.test.ts:generic-api-key:15
 e5a1838a21d6bd6b39379225baab3987fedcfb16:src/lib/registration/register.test.ts:generic-api-key:9
+# Reviewed (approved by Revanth, 26 Nov 2026): the staging Supabase publishable key in the CI
+# workflow. Publishable keys are public by design and only grant what Row Level Security allows;
+# the secret key stays in GitHub secrets.
+7155f0a03b807019b600fa059673dea21318073b:.github/workflows/ci.yml:generic-api-key:49
