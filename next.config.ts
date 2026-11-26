@@ -10,6 +10,25 @@ const nextConfig: NextConfig = {
     return Promise.resolve([{ source: "/:path*", headers: [...securityHeaders] }]);
   },
   reactStrictMode: true,
+  headers() {
+    return Promise.resolve([
+      {
+        // Organizer console: never indexed, never cached by shared caches.
+        source: "/admin/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Cache-Control", value: "private, no-store" },
+        ],
+      },
+      {
+        source: "/admin",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Cache-Control", value: "private, no-store" },
+        ],
+      },
+    ]);
+  },
   turbopack: {
     // Pin the workspace root so a stray lockfile higher up the tree is never picked up.
     root: __dirname,
