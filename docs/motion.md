@@ -1,0 +1,19 @@
+# Motion spec (home page)
+
+Personality: slow, weighted, precise, like a vault door. Tokens live in the Figma "Motion"
+collection and in `--duration-*` / `--ease-*` / `src/design/tokens.ts`. Animate only `transform` and
+`opacity`. Every item lists its reduced-motion fallback.
+
+| #   | Moment         | Trigger                    | What moves                                                                                                                                                                                  | Timing                                                                                     | Reduced motion                    |
+| --- | -------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------- |
+| 1   | Hero reveal    | First paint                | Badge, eyebrow fade in; "FinForge" mask-wipes up (inner span translateY 100% → 0 inside an overflow-clip line); hairline scaleX 0 → 1 from left; "2027", lede, facts, CTAs fade + rise 24px | `slower` 800ms, `out-expo`, 80ms stagger; text is server-rendered visible, so no LCP delay | Opacity only, 200ms, no stagger   |
+| 2   | Logo seal      | Hero reveal, +200ms        | Rings fade in and rotate −12° → 0 one after another; coin scales 0.85 → 1; ₹ drops 8px and settles; diamonds fade in                                                                        | `reveal` 1000ms, `out-expo`; rings staggered 60ms                                          | Static seal, fade only            |
+| 3   | Section reveal | Section 20% in view (once) | Section header: hairline scaleX 0 → 1, title mask-wipes up, description fades; content children fade + rise 24px                                                                            | `slow` 600ms, `out-expo`, 80ms stagger                                                     | Opacity only                      |
+| 4   | Timeline draw  | Timeline in view           | Rail line scaleY 0 → 1 (origin top) tied to scroll progress; markers opacity 0 → 1 + scale 0.6 → 1 as the line reaches them                                                                 | Scroll-linked (GSAP ScrollTrigger, lazy-loaded)                                            | Line fully drawn, markers visible |
+| 5   | Prize count-up | Prize card 40% in view     | ₹0 → ₹3,00,000 with Indian grouping (`formatINR`), tabular figures so width never changes                                                                                                   | `count` 1600ms, `out-quart`                                                                | Final value shown immediately     |
+| 6   | Hover / press  | Pointer devices only       | Button: colour shift, arrow translateX 4px; press scale 0.98. Card: translateY −4px, border strengthens. FAQ: plus → minus by rotating the vertical bar 90° and fading it                   | Hover `fast` 200ms `standard`; press `instant` 100ms; FAQ `base` 400ms `in-out`            | Colour change only, no movement   |
+| 7   | Mobile menu    | Menu button                | Bars rotate into an X; panel fades in; links stagger in (opacity + translateY 16px)                                                                                                         | `base` 400ms `in-out`, 80ms stagger                                                        | Instant panel, no stagger         |
+
+Rules: no motion blocks content (all text is in the HTML at full opacity for no-JS and crawlers; the
+JS sets initial states only after hydration and only when in view below the fold). GSAP loads only
+for the timeline (dynamic import). No layout shift: every animated element keeps its box.
