@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildCsp, createNonce, securityHeaders, TURNSTILE_ORIGIN } from "./headers";
+import {
+  buildCsp,
+  createNonce,
+  RAZORPAY_SCRIPT_ORIGIN,
+  securityHeaders,
+  TURNSTILE_ORIGIN,
+} from "./headers";
 
 function parse(csp: string): Map<string, string[]> {
   return new Map(
@@ -69,6 +75,29 @@ describe("buildCsp", () => {
       "https://ref.supabase.co",
       "wss://ref.supabase.co",
     ]);
+  });
+});
+
+describe("buildCsp with Razorpay", () => {
+  it("leaves Razorpay out unless asked", () => {
+    expect(buildCsp(base)).not.toContain("razorpay");
+  });
+
+  it("allows the checkout script, its iframe and its reporting endpoint", () => {
+    const csp = parse(buildCsp({ ...base, razorpay: true }));
+    expect(csp.get("script-src")).toContain(RAZORPAY_SCRIPT_ORIGIN);
+    expect(csp.get("script-src")).toContain("'strict-dynamic'");
+    expect(csp.get("frame-src")).toEqual([
+      TURNSTILE_ORIGIN,
+      "https://api.razorpay.com",
+      "https://checkout.razorpay.com",
+    ]);
+    expect(csp.get("connect-src")).toEqual([
+      "'self'",
+      "https://api.razorpay.com",
+      "https://lumberjack.razorpay.com",
+    ]);
+    expect(csp.get("form-action")).toEqual(["'self'"]);
   });
 });
 

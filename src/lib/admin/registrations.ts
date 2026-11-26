@@ -10,6 +10,18 @@ export interface RegistrationRow {
   is_leader: boolean | null;
   full_name: string | null;
   email: string | null;
+  payment_state: string | null;
+  amount_paise: number | null;
+  razorpay_payment_id: string | null;
+  paid_at: string | null;
+}
+
+export interface TeamPayment {
+  /** pending, paid or not_required (teams saved before fees existed). */
+  state: string;
+  amountPaise: number | null;
+  paymentId: string;
+  paidAt: string;
 }
 
 export interface TeamMember {
@@ -26,6 +38,7 @@ export interface TeamSummary {
   status: string;
   leaderPhone: string;
   registeredAt: string;
+  payment: TeamPayment;
   members: TeamMember[];
 }
 
@@ -43,6 +56,12 @@ export function groupTeams(rows: readonly RegistrationRow[]): TeamSummary[] {
         status: row.status ?? "",
         leaderPhone: row.leader_phone ?? "",
         registeredAt: row.registered_at ?? "",
+        payment: {
+          state: row.payment_state ?? "",
+          amountPaise: row.amount_paise,
+          paymentId: row.razorpay_payment_id ?? "",
+          paidAt: row.paid_at ?? "",
+        },
         members: [],
       };
       teams.set(row.reference, team);
@@ -62,6 +81,52 @@ export function groupTeams(rows: readonly RegistrationRow[]): TeamSummary[] {
   );
 }
 
+export type PaymentFilter = "all" | "paid" | "waiting";
+
+/**
+ * The payment status in words. An unpaid team is "Waiting" while its hold runs and "Hold expired"
+ * after: the next registration that wants its name or emails removes it.
+ */
+export function paymentLabel(team: TeamSummary, holdMinutes: number, now = Date.now()): string {
+  switch (team.payment.state) {
+    case "paid":
+      return "Paid";
+    case "not_required":
+      return "No fee";
+    case "pending": {
+      const started = new Date(team.registeredAt).getTime();
+      return now - started > holdMinutes * 60_000 ? "Hold expired" : "Waiting for payment";
+    }
+    default:
+      return team.payment.state;
+  }
+}
+
+export function matchesPaymentFilter(team: TeamSummary, filter: PaymentFilter): boolean {
+  if (filter === "all") return true;
+  const paid = team.payment.state === "paid" || team.payment.state === "not_required";
+  return filter === "paid" ? paid : !paid;
+}
+
+/** "₹1,398" from paise. Blank when there is no amount. */
+export function formatRupees(paise: number | null): string {
+  if (paise === null) return "";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: paise % 100 === 0 ? 0 : 2,
+  }).format(paise / 100);
+}
+
+/** A paid payment whose team was released before it arrived. It must be refunded by hand. */
+export interface OrphanPayment {
+  team_reference: string;
+  team_name: string;
+  amount_paise: number;
+  razorpay_payment_id: string | null;
+  paid_at: string | null;
+}
+
 /** Case-insensitive match on reference, team, college, member names and emails. */
 export function matchesSearch(team: TeamSummary, query: string): boolean {
   const q = query.trim().toLowerCase();
@@ -71,6 +136,7 @@ export function matchesSearch(team: TeamSummary, query: string): boolean {
     team.teamName,
     team.institution,
     team.leaderPhone,
+    team.payment.paymentId,
     ...team.members.flatMap((m) => [m.fullName, m.email]),
   ];
   return haystack.some((value) => value.toLowerCase().includes(q));
@@ -112,6 +178,10 @@ export const CSV_HEADER = [
   "Name",
   "Email",
   "Leader mobile",
+  "Payment",
+  "Amount (INR)",
+  "Razorpay payment ID",
+  "Paid (IST)",
 ] as const;
 
 /** One row per member, so the file sorts and filters well in Excel or Google Sheets. */
@@ -131,6 +201,10 @@ export function registrationsCsv(teams: readonly TeamSummary[]): string {
           m.fullName,
           m.email,
           m.isLeader ? team.leaderPhone : "",
+          team.payment.state,
+          team.payment.amountPaise === null ? "" : (team.payment.amountPaise / 100).toFixed(2),
+          team.payment.paymentId,
+          team.payment.paidAt ? formatRegisteredAt(team.payment.paidAt) : "",
         ]
           .map(csvCell)
           .join(","),

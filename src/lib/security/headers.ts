@@ -8,6 +8,18 @@
 /** Cloudflare Turnstile serves its script and its challenge iframe from this origin. */
 export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
 
+/**
+ * Razorpay Standard Checkout: checkout.js comes from checkout.razorpay.com, the payment pop-up is
+ * an iframe from api.razorpay.com, and the script reports errors to lumberjack.razorpay.com.
+ * Allowed only on /register, where the payment step runs.
+ */
+export const RAZORPAY_SCRIPT_ORIGIN = "https://checkout.razorpay.com";
+export const RAZORPAY_FRAME_ORIGINS = ["https://api.razorpay.com", RAZORPAY_SCRIPT_ORIGIN] as const;
+export const RAZORPAY_CONNECT_ORIGINS = [
+  "https://api.razorpay.com",
+  "https://lumberjack.razorpay.com",
+] as const;
+
 export interface CspOptions {
   /** Base64 nonce, fresh for every request. */
   nonce: string;
@@ -20,6 +32,8 @@ export interface CspOptions {
    * once the browser talks to Supabase Auth directly. Must be full https:// origins.
    */
   connectOrigins?: readonly string[];
+  /** Allow Razorpay Checkout (the /register page only). */
+  razorpay?: boolean;
 }
 
 /** A nonce must be unguessable and new per request: 128 random bits, base64 encoded. */
@@ -39,6 +53,7 @@ export function buildCsp({
   isDev,
   upgradeInsecureRequests,
   connectOrigins = [],
+  razorpay = false,
 }: CspOptions): string {
   const https = connectOrigins.filter((o) => o.startsWith("https://"));
   const directives: [string, ...string[]][] = [
@@ -52,6 +67,7 @@ export function buildCsp({
       `'nonce-${nonce}'`,
       "'strict-dynamic'",
       TURNSTILE_ORIGIN,
+      ...(razorpay ? [RAZORPAY_SCRIPT_ORIGIN] : []),
       ...(isDev ? ["'unsafe-eval'"] : []),
     ],
     // Style elements need the nonce. Style attributes stay allowed: Motion and our CSS custom
@@ -61,8 +77,14 @@ export function buildCsp({
     ["style-src-attr", "'unsafe-inline'"],
     ["img-src", "'self'", "data:", "blob:"],
     ["font-src", "'self'"],
-    ["connect-src", "'self'", ...https, ...https.map(socketOrigin)],
-    ["frame-src", TURNSTILE_ORIGIN],
+    [
+      "connect-src",
+      "'self'",
+      ...https,
+      ...https.map(socketOrigin),
+      ...(razorpay ? RAZORPAY_CONNECT_ORIGINS : []),
+    ],
+    ["frame-src", TURNSTILE_ORIGIN, ...(razorpay ? RAZORPAY_FRAME_ORIGINS : [])],
     ["worker-src", "'self'", "blob:"],
     ["manifest-src", "'self'"],
     ["media-src", "'self'"],

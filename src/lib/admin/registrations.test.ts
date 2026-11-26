@@ -3,8 +3,11 @@ import {
   CSV_HEADER,
   csvCell,
   formatRegisteredAt,
+  formatRupees,
   groupTeams,
+  matchesPaymentFilter,
   matchesSearch,
+  paymentLabel,
   registrationsCsv,
   type RegistrationRow,
 } from "./registrations";
@@ -20,6 +23,10 @@ const row = (over: Partial<RegistrationRow>): RegistrationRow => ({
   is_leader: true,
   full_name: "Asha Rao",
   email: "asha@example.com",
+  payment_state: "paid",
+  amount_paise: 139800,
+  razorpay_payment_id: "pay_ABC123",
+  paid_at: "2026-11-26T10:05:00Z",
   ...over,
 });
 
@@ -86,6 +93,7 @@ describe("registrationsCsv", () => {
     expect(lines[0]).toBe(CSV_HEADER.map((h) => `"${h}"`).join(","));
     expect(lines[1]).toContain('"Leader","Asha Rao","asha@example.com","\'+919876543210"');
     expect(lines[2]).toContain('"Member","Vik","v@x.com",""');
+    expect(lines[1]).toContain('"paid","1398.00","pay_ABC123"');
   });
 
   it("is just the header when there are no teams", () => {
@@ -100,5 +108,43 @@ describe("formatRegisteredAt", () => {
 
   it("returns an empty string for a bad date", () => {
     expect(formatRegisteredAt("nope")).toBe("");
+  });
+});
+
+describe("payments in the console", () => {
+  const hold = 30;
+  const registeredAt = "2026-11-26T10:00:00Z";
+  const at = (minutes: number) => new Date(registeredAt).getTime() + minutes * 60_000;
+  const team = (over: Partial<RegistrationRow>) => {
+    const [t] = groupTeams([row({ registered_at: registeredAt, ...over })]);
+    if (!t) throw new Error("no team");
+    return t;
+  };
+
+  it("labels paid, waiting, expired and fee-free teams", () => {
+    expect(paymentLabel(team({}), hold, at(5))).toBe("Paid");
+    const unpaid = team({ payment_state: "pending", razorpay_payment_id: null, paid_at: null });
+    expect(paymentLabel(unpaid, hold, at(29))).toBe("Waiting for payment");
+    expect(paymentLabel(unpaid, hold, at(31))).toBe("Hold expired");
+    expect(paymentLabel(team({ payment_state: "not_required" }), hold, at(5))).toBe("No fee");
+  });
+
+  it("filters paid and waiting teams", () => {
+    const paid = team({});
+    const unpaid = team({ payment_state: "pending" });
+    expect(matchesPaymentFilter(paid, "paid")).toBe(true);
+    expect(matchesPaymentFilter(paid, "waiting")).toBe(false);
+    expect(matchesPaymentFilter(unpaid, "waiting")).toBe(true);
+    expect(matchesPaymentFilter(unpaid, "all")).toBe(true);
+  });
+
+  it("finds a team by its Razorpay payment ID", () => {
+    expect(matchesSearch(team({}), "pay_abc")).toBe(true);
+  });
+
+  it("formats rupees from paise", () => {
+    expect(formatRupees(139800)).toBe("₹1,398");
+    expect(formatRupees(349500)).toBe("₹3,495");
+    expect(formatRupees(null)).toBe("");
   });
 });

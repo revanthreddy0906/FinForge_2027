@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
     ];
     return Promise.resolve([
       { source: "/:path*", headers: [...securityHeaders] },
+      // Razorpay opens bank and UPI pages in pop-ups that report back to the page that opened
+      // them, which "same-origin" would cut off. Only the payment page relaxes this.
+      {
+        source: "/register",
+        headers: [{ key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" }],
+      },
       { source: "/admin", headers: consoleHeaders },
       { source: "/admin/:path*", headers: consoleHeaders },
     ]);

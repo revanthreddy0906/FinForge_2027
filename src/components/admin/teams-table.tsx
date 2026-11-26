@@ -1,12 +1,31 @@
 "use client";
 
 import { useDeferredValue, useState } from "react";
-import { formatRegisteredAt, matchesSearch, type TeamSummary } from "@/lib/admin/registrations";
+import { event } from "@/config/event";
+import {
+  formatRegisteredAt,
+  formatRupees,
+  matchesPaymentFilter,
+  matchesSearch,
+  paymentLabel,
+  type PaymentFilter,
+  type TeamSummary,
+} from "@/lib/admin/registrations";
 
-export function TeamsTable({ teams }: { teams: TeamSummary[] }) {
+const pillClass = new Map([
+  ["Paid", "border-border-strong text-text-success"],
+  ["No fee", "border-border-subtle text-text-secondary"],
+  ["Waiting for payment", "border-border-frame text-text-accent"],
+  ["Hold expired", "border-border-danger text-text-danger"],
+]);
+
+export function TeamsTable({ teams, now }: { teams: TeamSummary[]; now: number }) {
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<PaymentFilter>("all");
   const deferred = useDeferredValue(query);
-  const shown = teams.filter((team) => matchesSearch(team, deferred));
+  const shown = teams.filter(
+    (team) => matchesPaymentFilter(team, filter) && matchesSearch(team, deferred),
+  );
 
   if (teams.length === 0) {
     return (
@@ -18,21 +37,40 @@ export function TeamsTable({ teams }: { teams: TeamSummary[] }) {
 
   return (
     <div className="flex flex-col gap-md">
-      <div className="flex max-w-[28rem] flex-col gap-xs">
-        <label htmlFor="team-search" className="text-label text-text-primary">
-          Search teams
-        </label>
-        <input
-          id="team-search"
-          type="search"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-          }}
-          maxLength={100}
-          placeholder="Team, college, name, email or reference"
-          className="min-h-12 w-full rounded-xs border border-border-default bg-bg-surface px-md text-body text-text-primary placeholder:text-text-muted hover:border-border-strong focus-visible:border-border-focus"
-        />
+      <div className="flex flex-wrap items-end gap-md">
+        <div className="flex w-full max-w-[28rem] flex-col gap-xs">
+          <label htmlFor="team-search" className="text-label text-text-primary">
+            Search teams
+          </label>
+          <input
+            id="team-search"
+            type="search"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+            }}
+            maxLength={100}
+            placeholder="Team, college, name, email or reference"
+            className="min-h-12 w-full rounded-xs border border-border-default bg-bg-surface px-md text-body text-text-primary placeholder:text-text-muted hover:border-border-strong focus-visible:border-border-focus"
+          />
+        </div>
+        <div className="flex flex-col gap-xs">
+          <label htmlFor="payment-filter" className="text-label text-text-primary">
+            Payment
+          </label>
+          <select
+            id="payment-filter"
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value as PaymentFilter);
+            }}
+            className="min-h-12 rounded-xs border border-border-default bg-bg-surface px-md text-body text-text-primary hover:border-border-strong focus-visible:border-border-focus"
+          >
+            <option value="all">All teams</option>
+            <option value="paid">Paid</option>
+            <option value="waiting">Not paid yet</option>
+          </select>
+        </div>
       </div>
       <p aria-live="polite" className="text-body-sm text-text-secondary">
         Showing {shown.length} of {teams.length} teams
@@ -44,7 +82,7 @@ export function TeamsTable({ teams }: { teams: TeamSummary[] }) {
         role="region"
         aria-label="Registered teams table"
       >
-        <table className="w-full min-w-[56rem] border-collapse text-left text-body-sm">
+        <table className="w-full min-w-[64rem] border-collapse text-left text-body-sm">
           <caption className="sr-only">Registered teams, oldest first</caption>
           <thead className="bg-bg-surface text-label text-text-primary">
             <tr>
@@ -56,6 +94,9 @@ export function TeamsTable({ teams }: { teams: TeamSummary[] }) {
               </th>
               <th scope="col" className="px-md py-sm">
                 College
+              </th>
+              <th scope="col" className="px-md py-sm">
+                Payment
               </th>
               <th scope="col" className="px-md py-sm">
                 Members
@@ -81,6 +122,29 @@ export function TeamsTable({ teams }: { teams: TeamSummary[] }) {
                   )}
                 </th>
                 <td className="px-md py-sm text-text-secondary">{team.institution}</td>
+                <td className="px-md py-sm whitespace-nowrap">
+                  {(() => {
+                    const label = paymentLabel(team, event.paymentHoldMinutes, now);
+                    return (
+                      <span
+                        className={`inline-block border px-xs text-label ${pillClass.get(label) ?? "border-border-subtle text-text-secondary"}`}
+                        data-testid="payment-status"
+                      >
+                        {label}
+                      </span>
+                    );
+                  })()}
+                  {team.payment.amountPaise !== null && (
+                    <span className="block text-text-secondary tabular-nums">
+                      {formatRupees(team.payment.amountPaise)}
+                    </span>
+                  )}
+                  {team.payment.paymentId && (
+                    <span className="block text-text-muted tabular-nums">
+                      {team.payment.paymentId}
+                    </span>
+                  )}
+                </td>
                 <td className="px-md py-sm">
                   <ol className="flex flex-col gap-2xs">
                     {team.members.map((m) => (

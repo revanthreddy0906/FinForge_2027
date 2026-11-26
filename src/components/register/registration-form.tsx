@@ -22,7 +22,73 @@ import {
   registrationSchema,
   type FieldErrors,
 } from "@/lib/registration/schema";
+import { PaymentStep } from "./payment-step";
 import { Turnstile } from "./turnstile";
+
+/**
+ * A team that is saved but not paid keeps its key for this tab, so after a reload, submitting
+ * again reopens the same team's payment instead of hitting "name held". Storage can fail
+ * (private mode), in which case this is simply skipped.
+ */
+const PENDING_KEY = "finforge-pending-registration";
+function pendingKey(): string | null {
+  try {
+    return sessionStorage.getItem(PENDING_KEY);
+  } catch {
+    return null;
+  }
+}
+function rememberPendingKey(key: FormDataEntryValue | null) {
+  try {
+    if (typeof key === "string") sessionStorage.setItem(PENDING_KEY, key);
+  } catch {
+    // ignore
+  }
+}
+function forgetPendingKey() {
+  try {
+    sessionStorage.removeItem(PENDING_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+function ConfirmedView({ reference, teamName }: { reference: string; teamName: string }) {
+  // The view replaces the form, so focus its heading once it mounts.
+  const focusOnMount = useCallback((el: HTMLHeadingElement | null) => el?.focus(), []);
+  return (
+    <section
+      aria-labelledby="success-title"
+      className="flex flex-col gap-lg border border-border-frame p-lg md:p-2xl"
+    >
+      <p className="text-eyebrow text-text-success uppercase">Registration confirmed</p>
+      <h2
+        id="success-title"
+        ref={focusOnMount}
+        tabIndex={-1}
+        className="font-display text-heading-2 text-text-primary"
+      >
+        {teamName} is in.
+      </h2>
+      <div className="flex flex-col gap-xs">
+        <p className="text-body text-text-secondary">Your team reference</p>
+        <p className="font-display text-numeral text-text-accent" data-testid="team-reference">
+          {reference}
+        </p>
+      </div>
+      <p className="max-w-[40rem] text-body text-text-secondary">
+        Your payment is received. Save this reference or take a screenshot. You&apos;ll need it if
+        you contact us about your registration. We&apos;ll share event updates with the team leader
+        by email.
+      </p>
+      <div>
+        <Link href="/" className="text-label text-text-accent underline underline-offset-4">
+          Back to the home page
+        </Link>
+      </div>
+    </section>
+  );
+}
 
 interface Member {
   key: number;
@@ -88,16 +154,16 @@ const inputId = (path: string) => `f-${path.replace(/\./g, "-")}`;
 
 export function RegistrationForm({ siteKey }: { siteKey: string }) {
   const summaryRef = useRef<HTMLDivElement>(null);
-  // The success view replaces the form, so focus its heading once it mounts. A requestAnimationFrame
-  // from the action can fire before React commits the transition, when the heading doesn't exist yet.
-  const focusOnMount = useCallback((el: HTMLHeadingElement | null) => el?.focus(), []);
   const [serverErrors, setServerErrors] = useState<FieldErrors>(new Map());
   const [summary, setSummary] = useState<string | null>(null);
+  const [paid, setPaid] = useState<{ reference: string; teamName: string } | null>(null);
   const [resetSignal, setResetSignal] = useState(0);
 
   const [result, formAction, isPending] = useActionState(
     async (previous: RegisterResult, fd: FormData) => {
       const next = await registerAction(previous, fd);
+      if (next.status === "payment") rememberPendingKey(fd.get(fieldName.idempotencyKey));
+      if (next.status === "success") forgetPendingKey();
       if (next.status === "error") {
         setServerErrors(next.fieldErrors);
         setSummary(next.message);
@@ -197,7 +263,7 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
       return;
     }
     setSummary(null);
-    idempotencyKey.current ??= crypto.randomUUID();
+    idempotencyKey.current ??= pendingKey() ?? crypto.randomUUID();
     const fd = new FormData(e.currentTarget);
     fd.set(fieldName.idempotencyKey, idempotencyKey.current);
     startTransition(() => {
@@ -205,37 +271,21 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
     });
   };
 
+  if (paid) {
+    return <ConfirmedView reference={paid.reference} teamName={paid.teamName} />;
+  }
   if (result.status === "success") {
+    return <ConfirmedView reference={result.reference} teamName={result.teamName} />;
+  }
+  if (result.status === "payment") {
     return (
-      <section
-        aria-labelledby="success-title"
-        className="flex flex-col gap-lg border border-border-frame p-lg md:p-2xl"
-      >
-        <p className="text-eyebrow text-text-success uppercase">Registration confirmed</p>
-        <h2
-          id="success-title"
-          ref={focusOnMount}
-          tabIndex={-1}
-          className="font-display text-heading-2 text-text-primary"
-        >
-          {result.teamName} is in.
-        </h2>
-        <div className="flex flex-col gap-xs">
-          <p className="text-body text-text-secondary">Your team reference</p>
-          <p className="font-display text-numeral text-text-accent" data-testid="team-reference">
-            {result.reference}
-          </p>
-        </div>
-        <p className="max-w-[40rem] text-body text-text-secondary">
-          Save this reference or take a screenshot. You&apos;ll need it if you contact us about your
-          registration. We&apos;ll share event updates with the team leader by email.
-        </p>
-        <div>
-          <Link href="/" className="text-label text-text-accent underline underline-offset-4">
-            Back to the home page
-          </Link>
-        </div>
-      </section>
+      <PaymentStep
+        payment={result.payment}
+        onPaid={(reference, teamName) => {
+          forgetPendingKey();
+          setPaid({ reference, teamName });
+        }}
+      />
     );
   }
 

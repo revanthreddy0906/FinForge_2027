@@ -7,6 +7,11 @@ import { buildCsp, createNonce } from "@/lib/security/headers";
  * `docs/adr/0002-content-security-policy.md`). The static security headers live in
  * `next.config.ts`.
  */
+/** The payment step runs on /register, so only that page may load Razorpay Checkout. */
+function isRegisterPage(pathname: string): boolean {
+  return pathname === "/register" || pathname.startsWith("/register/");
+}
+
 export function proxy(request: NextRequest) {
   const nonce = createNonce();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -15,6 +20,7 @@ export function proxy(request: NextRequest) {
     isDev: process.env.NODE_ENV === "development",
     upgradeInsecureRequests: request.nextUrl.protocol === "https:",
     connectOrigins: supabaseUrl ? [new URL(supabaseUrl).origin] : [],
+    razorpay: isRegisterPage(request.nextUrl.pathname),
   });
 
   const requestHeaders = new Headers(request.headers);
