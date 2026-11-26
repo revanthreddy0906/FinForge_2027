@@ -15,21 +15,22 @@
 
   Remove it (set it back to "Automatic") only after `engineering:deploy-checklist` passes and the
   launch is approved.
+
 - Vercel Toolbar is off for previews and production: it injects `vercel.live` scripts, frames and
   inline styles that our CSP (rightly) blocks.
 
 ## Environment variables
 
-| Variable | Production | Preview + Development | Type |
-|---|---|---|---|
-| `SUPABASE_URL` | `FinForge_2027` project URL | `FinForge_2027_staging` project URL | plain |
-| `SUPABASE_PUBLISHABLE_KEY` | production publishable key | staging publishable key | plain |
-| `SUPABASE_SECRET_KEY` | production secret key | staging secret key | **sensitive**, added by hand |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | FinForge widget | same | plain |
-| `TURNSTILE_SECRET_KEY` | FinForge widget secret | same | **sensitive**, added by hand |
-| `UPSTASH_REDIS_REST_URL` | Upstash database URL | same | plain |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash token | same | **sensitive**, added by hand |
-| `NEXT_PUBLIC_REGISTRATION_STATE` | never set | `open` (preview only) | plain |
+| Variable                         | Production                  | Preview + Development               | Type                         |
+| -------------------------------- | --------------------------- | ----------------------------------- | ---------------------------- |
+| `SUPABASE_URL`                   | `FinForge_2027` project URL | `FinForge_2027_staging` project URL | plain                        |
+| `SUPABASE_PUBLISHABLE_KEY`       | production publishable key  | staging publishable key             | plain                        |
+| `SUPABASE_SECRET_KEY`            | production secret key       | staging secret key                  | **sensitive**, added by hand |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | FinForge widget             | same                                | plain                        |
+| `TURNSTILE_SECRET_KEY`           | FinForge widget secret      | same                                | **sensitive**, added by hand |
+| `UPSTASH_REDIS_REST_URL`         | Upstash database URL        | same                                | plain                        |
+| `UPSTASH_REDIS_REST_TOKEN`       | Upstash token               | same                                | **sensitive**, added by hand |
+| `NEXT_PUBLIC_REGISTRATION_STATE` | never set                   | `open` (preview only)               | plain                        |
 
 `FINFORGE_ALLOW_MEMORY_RATE_LIMIT` is never set on Vercel.
 
