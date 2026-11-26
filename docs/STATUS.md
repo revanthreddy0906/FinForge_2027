@@ -43,6 +43,21 @@ Last updated: 2026-11-26
     `supabase/tests/registration_rules.sql`: 23/23 pass
   - Types in `src/lib/supabase/database.types.ts` (generated, excluded from ESLint)
 
+- **Step 6, team registration** (`/register`)
+  - Form in the Secure Ledger style: team, college, 2 to 5 members, leader mobile, privacy note
+    with consent, Cloudflare Turnstile; inline errors plus an error summary; reference shown on
+    success
+  - Server action: registration state check, rate limit (5/min per IP, Upstash; in-memory only
+    for local tests), Zod validation shared with the form, Turnstile verification, save through
+    `register_team`, friendly messages for every database rule
+  - Page is static (no database read on render); `NEXT_PUBLIC_REGISTRATION_STATE` can force a
+    state for staging previews and e2e tests
+  - Staging Supabase project `FinForge_2027_staging` (ref `iylwxuxotglsshkaoayx`) with the same
+    migrations, advisors clean
+  - Tests: Vitest 55 pass; Playwright (desktop + 360px) 10 pass, axe WCAG 2.1 AA 0 violations;
+    the database flow tests (success, duplicate name, email in another team) are written but
+    skipped until the staging secret key is available
+
 ## Pending
 
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
@@ -65,8 +80,14 @@ Last updated: 2026-11-26
 
 - Database: before registration opens, restart the team reference counter (test runs use up
   numbers): `alter table public.teams alter column seq restart with 1;` when the table is empty.
-- Database: the team cap (`event_full`) path is not yet tested; cover it in the registration
-  route tests. Team cap number is TODO (Revanth to confirm).
+- Database: the team cap (`event_full`) path is covered by unit tests on the server side, but not
+  yet against a real database. Team cap number is TODO (Revanth to confirm).
+- Registration needs real keys before launch: Supabase secret key, Turnstile secret key, Upstash
+  Redis URL and token (see `.env.example`). Turnstile site key: the FinForge widget (hostname
+  localhost for now; add the production domain in Cloudflare).
+- Confirmation email is switched off: Resend needs a verified domain, and FinForge has none yet.
+  The on-screen team reference is the proof of registration. See `src/lib/server/confirmation-email.ts`.
+- CSP (build step 4) must allow `https://challenges.cloudflare.com` for script and frame.
 - Supabase free projects pause after a week of inactivity: keep `FinForge_2027` active or upgrade
   before registration opens.
 
