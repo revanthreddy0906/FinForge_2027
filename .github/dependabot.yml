@@ -8,6 +8,14 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Held back on purpose; see docs/STATUS.md.
+      - dependency-name: eslint # Next's ESLint plugins don't support ESLint 10 yet
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript # typescript-eslint doesn't support TypeScript 7 yet
+        update-types: [version-update:semver-major]
+      - dependency-name: "@types/node" # match the Node 24 runtime in .nvmrc
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
