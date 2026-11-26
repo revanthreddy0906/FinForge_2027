@@ -13,7 +13,7 @@ function NavCta({ className }: { className?: string }) {
       Register
     </ButtonLink>
   ) : (
-    <ButtonLink href="#timeline" className={className}>
+    <ButtonLink href="/#timeline" className={className}>
       Key dates
     </ButtonLink>
   );

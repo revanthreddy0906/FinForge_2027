@@ -6,6 +6,17 @@
 
 export type RegistrationState = "coming-soon" | "open" | "closed";
 
+const registrationStates: readonly RegistrationState[] = ["coming-soon", "open", "closed"];
+
+/**
+ * The registration state is set below. NEXT_PUBLIC_REGISTRATION_STATE can override it for a
+ * staging preview or the end-to-end tests (for example "open"); leave it unset in production.
+ */
+function registrationState(fallback: RegistrationState): RegistrationState {
+  const override = process.env.NEXT_PUBLIC_REGISTRATION_STATE;
+  return registrationStates.find((s) => s === override) ?? fallback;
+}
+
 export interface TimelineEntry {
   readonly title: string;
   readonly description: string;
@@ -41,7 +52,7 @@ export const event = {
   prizeBreakdown: null as null | readonly { label: string; amount: number }[],
 
   // TODO: registration open/close dates. Flip this to "open" when registration starts.
-  registration: "coming-soon" as RegistrationState,
+  registration: registrationState("coming-soon"),
   registrationPath: "/register",
 
   // TODO: tracks. Placeholders render until real tracks are announced.
