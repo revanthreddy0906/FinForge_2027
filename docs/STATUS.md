@@ -68,6 +68,21 @@ Last updated: 2026-11-26
   - Tests: Vitest for the CSP builder; Playwright `e2e/security-headers.spec.ts` checks every
     header, a fresh nonce per response on every script, and zero CSP violations on `/`,
     `/register` (with Turnstile) and the 404 page, at desktop and 360px
+- **Organizer console** (build step 7, `/admin`, ADR `docs/adr/0003-admin-console-auth.md`)
+  - Sign-in with email + password, then an authenticator-app code (Supabase MFA, TOTP); first
+    sign-in shows a QR code to set the app up. No emails are sent.
+  - Rate limited (5/min per IP, Upstash) for both steps; one message for wrong email or password
+  - Session in two httpOnly, SameSite=Strict cookies scoped to `/admin`; ends 12 hours after
+    sign-in (checked from the token's signed `amr` times); expired access tokens are refreshed
+    through `/admin/session`
+  - Reads go through the organizer's own token, so RLS decides access. Migration
+    `admin_requires_mfa`: `is_admin()` needs aal2, plus `current_user_is_admin()`. Applied to
+    staging and production; advisors 0/0; SQL rule test 28/28 on staging
+  - Teams table with search, counts, and CSV export (one row per member, formula-injection safe)
+  - Not indexed: `noindex` metadata, `X-Robots-Tag`, `robots.txt` disallows `/admin`
+  - Tests: Vitest (login flow, CSV, search, session age); Playwright no-DB (redirects, noindex,
+    errors, rate limit, axe) and a staging flow (QR set-up, wrong code, table, CSV, sign out,
+    password-only blocked) using test organizer `e2e-admin@example.com` (allow-listed in staging)
 
 ## Pending
 
@@ -103,6 +118,11 @@ Last updated: 2026-11-26
   the securityheaders.com grade there too.
 - CSP: if browser code calls Supabase directly, set `NEXT_PUBLIC_SUPABASE_URL` so `connect-src`
   allows it. Sentry will need its ingest origin added.
+- Organizer console set-up (both Supabase projects): create the organizer user under
+  Authentication > Users > Add user (auto-confirm), turn off "Allow new users to sign up", and
+  set `SUPABASE_PUBLISHABLE_KEY` on Vercel. The organizer email must be in
+  `private.admin_allowlist`.
+- CSP: the console's QR code is a `data:` image, so `img-src` must allow `data:`.
 - Supabase free projects pause after a week of inactivity: keep `FinForge_2027` active or upgrade
   before registration opens.
 
