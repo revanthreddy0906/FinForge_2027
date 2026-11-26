@@ -54,9 +54,9 @@ Last updated: 2026-11-26
     state for staging previews and e2e tests
   - Staging Supabase project `FinForge_2027_staging` (ref `iylwxuxotglsshkaoayx`) with the same
     migrations, advisors clean
-  - Tests: Vitest 55 pass; Playwright (desktop + 360px) 10 pass, axe WCAG 2.1 AA 0 violations;
-    the database flow tests (success, duplicate name, email in another team) are written but
-    skipped until the staging secret key is available
+  - Tests: Vitest 55 pass; Playwright (desktop + 360px) 14 pass in CI, axe WCAG 2.1 AA 0
+    violations, including the database flow tests (success, duplicate name, email in another
+    team) against staging via the `E2E_SUPABASE_URL` and `E2E_SUPABASE_SECRET_KEY` secrets
 
 ## Pending
 
