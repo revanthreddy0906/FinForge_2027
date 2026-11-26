@@ -84,6 +84,15 @@ Last updated: 2026-11-26
     errors, rate limit, axe) and a staging flow (QR set-up, wrong code, table, CSV, sign out,
     password-only blocked) using test organizer `e2e-admin@example.com` (allow-listed in staging)
 
+- **Vercel hosting** (`docs/deployment.md`)
+  - Project `finforge-2027` linked to the GitHub repo; Node 24.x, functions in `bom1` (Mumbai)
+  - Previews (every non-`main` branch) use the staging Supabase project and are behind Vercel
+    Authentication; production env vars point at `FinForge_2027`
+  - Production builds paused with an Ignored Build Step until launch is approved
+  - Public env vars set; secrets (Supabase secret key, Turnstile secret, Upstash token) are added
+    by hand in the dashboard
+  - Preview checked: all security headers present, Turnstile script loads under the CSP
+
 ## Pending
 
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
@@ -113,9 +122,10 @@ Last updated: 2026-11-26
   localhost for now; add the production domain in Cloudflare).
 - Confirmation email is switched off: Resend needs a verified domain, and FinForge has none yet.
   The on-screen team reference is the proof of registration. See `src/lib/server/confirmation-email.ts`.
-- CSP: the real Turnstile iframe could not be loaded from the cloud test machine (Cloudflare is
-  blocked there); tests use a stand-in. Check the live widget on the first preview deploy, and get
-  the securityheaders.com grade there too.
+- CSP: the real Turnstile script loads on the Vercel preview with no CSP errors. The widget shows
+  error 110200 until the deployment hostname is added to the Cloudflare widget. The
+  securityheaders.com grade has to be taken on the public production URL (previews are protected).
+- Vercel Hobby plan is for non-commercial use only; upgrade to Pro before launch.
 - CSP: if browser code calls Supabase directly, set `NEXT_PUBLIC_SUPABASE_URL` so `connect-src`
   allows it. Sentry will need its ingest origin added.
 - Organizer console set-up (both Supabase projects): create the organizer user under
