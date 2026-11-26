@@ -115,7 +115,9 @@ Last updated: 2026-11-27
     netbanking success (team confirmed), bank failure (Razorpay retry screen, team stays
     unpaid), cancelled pop-up, lost confirmation recovered by the signed webhook and by
     "Check payment", replayed webhooks and checks (no double marking), forged signatures and a
-    payment swapped onto another order (rejected)
+    payment swapped onto another order (rejected), and a hold that expired after 31 minutes:
+    a new team took the name and email, then the old team's late payment was recorded for a
+    refund (FF27-0066). CI (including the staging e2e flow) green on `main`
   - Migrations applied to staging only; production waits for Revanth's go-ahead
 
 ## Pending
