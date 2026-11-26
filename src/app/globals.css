@@ -36,6 +36,8 @@
 }
 
 @theme {
+  /* Content width (Figma 1440 frame minus 2×120 margins) -> max-w-content */
+  --container-content: 75rem;
   /* Drop Tailwind defaults so only design-system tokens produce utilities. */
   --color-*: initial;
   --font-*: initial;
@@ -231,5 +233,155 @@
   ::selection {
     background-color: var(--color-bg-accent);
     color: var(--color-text-on-accent);
+  }
+}
+
+/*
+ * Motion layer (docs/motion.md). CSS-only moments: hero reveal, seal, timeline rail,
+ * FAQ answer, mobile menu. Transform and opacity only; every timing comes from tokens,
+ * so the reduced-motion block above already shortens them. Items stagger with --i.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--distance-reveal));
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes wipe {
+  from {
+    transform: translateY(105%);
+  }
+}
+
+@keyframes draw-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes draw-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes ring-in {
+  from {
+    opacity: 0;
+    transform: rotate(-12deg);
+  }
+}
+
+@keyframes coin-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes rupee-settle {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@layer components {
+  .hero-rise,
+  .hero-wipe,
+  .hero-draw,
+  .seal-ring,
+  .seal-coin,
+  .seal-rupee,
+  .seal-diamond {
+    animation-duration: var(--duration-slower);
+    animation-timing-function: var(--ease-out-expo);
+    animation-fill-mode: both;
+    animation-delay: calc(var(--i, 0) * var(--stagger-base));
+  }
+
+  .hero-rise {
+    animation-name: rise;
+  }
+
+  .hero-wipe {
+    animation-name: wipe;
+  }
+
+  .hero-draw {
+    animation-name: draw-x;
+    transform-origin: left center;
+  }
+
+  .seal-ring {
+    animation-name: ring-in;
+    animation-duration: var(--duration-reveal);
+    animation-delay: calc(200ms + var(--i, 0) * 60ms);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .seal-coin {
+    animation-name: coin-in;
+    animation-duration: var(--duration-reveal);
+    animation-delay: 200ms;
+  }
+
+  .seal-rupee {
+    animation-name: rupee-settle;
+    animation-duration: var(--duration-reveal);
+    animation-delay: 400ms;
+  }
+
+  .seal-diamond {
+    animation-name: fade;
+    animation-delay: calc(600ms + var(--i, 0) * var(--stagger-base));
+  }
+
+  .faq-answer:not([hidden]) {
+    animation: rise var(--duration-base) var(--ease-in-out) both;
+  }
+
+  .mobile-menu:not([hidden]) {
+    animation: fade var(--duration-base) var(--ease-in-out) both;
+  }
+
+  .mobile-menu:not([hidden]) .menu-item {
+    animation: rise var(--duration-base) var(--ease-in-out) both;
+    animation-delay: calc(var(--i, 0) * var(--stagger-base));
+  }
+
+  /* Timeline rail draws with scroll where the browser supports scroll-driven animations. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .timeline-rail {
+        animation: draw-y linear both;
+        animation-timeline: view();
+        animation-range: entry 20% cover 60%;
+      }
+    }
+  }
+
+  /* Reduced motion: anything that travelled now only fades (no wipe, rotation or scale). */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-wipe,
+    .hero-draw,
+    .seal-ring,
+    .seal-coin,
+    .seal-rupee {
+      animation-name: fade;
+      animation-delay: 0ms;
+    }
+
+    .seal-diamond {
+      animation-delay: 0ms;
+    }
   }
 }
