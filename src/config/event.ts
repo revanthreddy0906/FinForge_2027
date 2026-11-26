@@ -46,6 +46,14 @@ export const event = {
 
   team: { minSize: 2, maxSize: 5 },
 
+  /**
+   * Registration fee, charged per team member when the team registers (Razorpay). The server
+   * multiplies this by the member count saved in the database, never by anything the browser sends.
+   */
+  fee: { perMemberRupees: 699 },
+  /** Minutes an unpaid registration keeps its team name and emails. Mirrors the database setting. */
+  paymentHoldMinutes: 30,
+
   /** Rupees. */
   prizePool: 300_000,
   // TODO: prize breakdown by position and track.

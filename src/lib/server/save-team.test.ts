@@ -24,7 +24,12 @@ describe("saveTeam", () => {
       data: [{ team_id: "t", reference: "FF27-0001", created: true }],
       error: null,
     });
-    expect(await saveTeam(payload)).toEqual({ ok: true, reference: "FF27-0001", created: true });
+    expect(await saveTeam(payload)).toEqual({
+      ok: true,
+      teamId: "t",
+      reference: "FF27-0001",
+      created: true,
+    });
     expect(rpc).toHaveBeenCalledWith("register_team", { payload });
   });
 

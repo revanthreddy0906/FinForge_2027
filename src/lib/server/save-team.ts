@@ -9,6 +9,8 @@ const knownCodes = new Set<string>([
   "duplicate_member_email",
   "team_name_taken",
   "email_taken",
+  "team_name_held",
+  "email_held",
   "event_full",
 ]);
 
@@ -30,5 +32,5 @@ export async function saveTeam(
   }
   const row = data[0];
   if (!row) return { ok: false, code: "unavailable" };
-  return { ok: true, reference: row.reference, created: row.created };
+  return { ok: true, teamId: row.team_id, reference: row.reference, created: row.created };
 }

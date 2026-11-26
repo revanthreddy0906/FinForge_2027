@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { PaymentStart, StartOutcome } from "@/lib/payments/flow";
 import { copy, registerTeam, type RegisterDeps, type SaveOutcome } from "./register";
 
 const input = {
@@ -13,40 +14,97 @@ const input = {
   ],
 };
 
+const payment: PaymentStart = {
+  keyId: "rzp_test_abc",
+  orderId: "order_ABC123",
+  amountPaise: 139800,
+  memberCount: 2,
+  reference: "FF27-0007",
+  teamName: "Ledger Hawks",
+  prefill: { name: "Asha Rao", email: "asha@example.com", contact: "+919876543210" },
+};
+
 function deps(overrides: Partial<RegisterDeps> = {}, save?: SaveOutcome) {
   return {
     registrationState: () => "open" as const,
     allowRequest: vi.fn(() => Promise.resolve(true)),
     verifyHuman: vi.fn(() => Promise.resolve(true)),
     saveTeam: vi.fn(() =>
-      Promise.resolve<SaveOutcome>(save ?? { ok: true, reference: "FF27-0007", created: true }),
+      Promise.resolve<SaveOutcome>(
+        save ?? { ok: true, teamId: "team-1", reference: "FF27-0007", created: true },
+      ),
     ),
-    sendConfirmation: vi.fn(() => Promise.resolve()),
+    startPayment: vi.fn(() => Promise.resolve<StartOutcome>({ kind: "pay", payment })),
     ...overrides,
   } satisfies RegisterDeps;
 }
 
 describe("registerTeam", () => {
-  it("saves a valid team and returns its reference", async () => {
+  it("saves a valid team and moves on to payment for that team", async () => {
     const d = deps();
     const result = await registerTeam(input, "token", "1.2.3.4", d);
-    expect(result).toEqual({ status: "success", reference: "FF27-0007", teamName: "Ledger Hawks" });
+    expect(result).toEqual({ status: "payment", payment });
     expect(d.verifyHuman).toHaveBeenCalledWith("token", "1.2.3.4");
     expect(d.saveTeam).toHaveBeenCalledWith(
       expect.objectContaining({ leader_phone: "+919876543210", team_name: "Ledger Hawks" }),
     );
-    expect(d.sendConfirmation).toHaveBeenCalledWith(
-      "asha@example.com",
-      "FF27-0007",
-      "Ledger Hawks",
-    );
+    expect(d.startPayment).toHaveBeenCalledWith("team-1");
   });
 
-  it("returns the same team on a replay and doesn't email twice", async () => {
-    const d = deps({}, { ok: true, reference: "FF27-0007", created: false });
+  it("a replay of the same team goes back to its payment", async () => {
+    const d = deps({}, { ok: true, teamId: "team-1", reference: "FF27-0007", created: false });
     const result = await registerTeam(input, "token", "ip", d);
-    expect(result.status).toBe("success");
-    expect(d.sendConfirmation).not.toHaveBeenCalled();
+    expect(result).toEqual({ status: "payment", payment });
+    expect(d.startPayment).toHaveBeenCalledWith("team-1");
+  });
+
+  it("a replay of a team that already paid shows it as confirmed", async () => {
+    const d = deps({
+      startPayment: vi.fn(() =>
+        Promise.resolve<StartOutcome>({
+          kind: "paid",
+          reference: "FF27-0007",
+          teamName: "Ledger Hawks",
+        }),
+      ),
+    });
+    expect(await registerTeam(input, "token", "ip", d)).toEqual({
+      status: "success",
+      reference: "FF27-0007",
+      teamName: "Ledger Hawks",
+    });
+  });
+
+  it("says the team is saved when the payment can't start", async () => {
+    const d = deps({
+      startPayment: vi.fn(() => Promise.resolve<StartOutcome>({ kind: "unavailable" })),
+    });
+    expect(await registerTeam(input, "token", "ip", d)).toMatchObject({
+      status: "error",
+      message: copy.paymentUnavailable,
+    });
+  });
+
+  it("maps a name held by an unpaid team to the team name field", async () => {
+    const result = await registerTeam(
+      input,
+      "t",
+      "ip",
+      deps({}, { ok: false, code: "team_name_held" }),
+    );
+    expect(result.status === "error" && result.fieldErrors.get("teamName")).toBe(copy.teamNameHeld);
+  });
+
+  it("maps an email held by an unpaid team to the member who used it", async () => {
+    const result = await registerTeam(
+      input,
+      "t",
+      "ip",
+      deps({}, { ok: false, code: "email_held", detail: "vik@example.com" }),
+    );
+    expect(result.status === "error" && result.fieldErrors.get("members.1.email")).toBe(
+      copy.emailHeld,
+    );
   });
 
   it.each([

@@ -1,4 +1,5 @@
 import { event, type RegistrationState } from "@/config/event";
+import type { PaymentStart, StartOutcome } from "@/lib/payments/flow";
 import {
   fieldErrorsFrom,
   memberLabel,
@@ -11,6 +12,7 @@ import {
 export type RegisterResult =
   | { status: "idle" }
   | { status: "success"; reference: string; teamName: string }
+  | { status: "payment"; payment: PaymentStart }
   | { status: "error"; message: string; fieldErrors: FieldErrors };
 
 export const initialRegisterResult: RegisterResult = { status: "idle" };
@@ -22,10 +24,12 @@ export type DbErrorCode =
   | "duplicate_member_email"
   | "team_name_taken"
   | "email_taken"
+  | "team_name_held"
+  | "email_held"
   | "event_full";
 
 export type SaveOutcome =
-  | { ok: true; reference: string; created: boolean }
+  | { ok: true; teamId: string; reference: string; created: boolean }
   | { ok: false; code: DbErrorCode; detail?: string }
   | { ok: false; code: "unavailable" };
 
@@ -36,8 +40,8 @@ export interface RegisterDeps {
   allowRequest: (ip: string) => Promise<boolean>;
   verifyHuman: (token: string, ip: string) => Promise<boolean>;
   saveTeam: (payload: ReturnType<typeof toRegisterTeamPayload>) => Promise<SaveOutcome>;
-  /** Sends the confirmation email. Must not throw; failures are logged by the implementation. */
-  sendConfirmation: (to: string, reference: string, teamName: string) => Promise<void>;
+  /** Creates or reuses the team's Razorpay order. Must not throw. */
+  startPayment: (teamId: string) => Promise<StartOutcome>;
 }
 
 export const copy = {
@@ -53,6 +57,10 @@ export const copy = {
   eventFull: `${event.name} is full, so we can't take more teams. Thanks for your interest.`,
   teamNameTaken: "Another team already has this name. Please choose a different one.",
   emailTaken: "This email is already registered in another team. Each person can join one team.",
+  teamNameHeld: `A team with this name is waiting to pay. If that's your team, finish paying in the tab where you started. Otherwise pick another name, or try again after ${String(event.paymentHoldMinutes)} minutes.`,
+  emailHeld: `This email is in a team that is waiting to pay. Finish paying in the tab where you started, or try again after ${String(event.paymentHoldMinutes)} minutes.`,
+  paymentUnavailable:
+    "Your team is saved, but we couldn't start the payment just now. Press Register team again in a minute to continue.",
 } as const;
 
 const error = (message: string, fieldErrors: FieldErrors = new Map()): RegisterResult => ({
@@ -86,11 +94,16 @@ export async function registerTeam(
     const saved = await deps.saveTeam(toRegisterTeamPayload(data));
     if (!saved.ok) return mapSaveError(saved, data.members);
 
-    if (saved.created) {
-      const leader = data.members[0];
-      if (leader) await deps.sendConfirmation(leader.email, saved.reference, data.teamName);
+    // New teams and retries both land here: the same team keeps the same order.
+    const started = await deps.startPayment(saved.teamId);
+    switch (started.kind) {
+      case "pay":
+        return { status: "payment", payment: started.payment };
+      case "paid":
+        return { status: "success", reference: started.reference, teamName: started.teamName };
+      case "unavailable":
+        return error(copy.paymentUnavailable);
     }
-    return { status: "success", reference: saved.reference, teamName: data.teamName };
   } catch {
     return error(copy.unavailable);
   }
@@ -108,6 +121,13 @@ function mapSaveError(
       if (i < 0) return error(copy.emailTaken);
       const message = `This email is already registered in another team. Each person can join one team, so use a different email for ${memberLabel(i)}.`;
       return error(copy.emailTaken, new Map([[`members.${String(i)}.email`, message]]));
+    }
+    case "team_name_held":
+      return error(copy.teamNameHeld, new Map([["teamName", copy.teamNameHeld]]));
+    case "email_held": {
+      const i = saved.detail ? members.findIndex((m) => m.email === saved.detail) : -1;
+      if (i < 0) return error(copy.emailHeld);
+      return error(copy.emailHeld, new Map([[`members.${String(i)}.email`, copy.emailHeld]]));
     }
     case "event_full":
       return error(copy.eventFull);
