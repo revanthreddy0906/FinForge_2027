@@ -32,6 +32,10 @@ function loadScript(): Promise<void> {
   scriptPromise ??= new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
     script.src = SCRIPT_SRC;
+    // Pass on the page's CSP nonce (browsers expose it only as a property). strict-dynamic already
+    // allows this script; Turnstile also copies the nonce to anything it adds to the page.
+    const nonce = document.querySelector<HTMLScriptElement>("script[nonce]")?.nonce;
+    if (nonce) script.nonce = nonce;
     script.async = true;
     script.defer = true;
     script.onload = () => {

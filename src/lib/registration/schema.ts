@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { event } from "@/config/event";
 
+// Zod's JIT compiles validators with `new Function`. Our CSP forbids eval, and even Zod's
+// try/catch probe for it is reported as a CSP violation in the browser, so turn the JIT off.
+z.config({ jitless: true });
+
 /**
  * Registration rules, shared by the form (client) and the server action.
  * They mirror the database constraints in supabase/migrations, which remain the final word.
