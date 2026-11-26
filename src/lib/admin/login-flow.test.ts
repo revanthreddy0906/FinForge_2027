@@ -141,12 +141,12 @@ describe("codeStep", () => {
     expect(d.verifyCode).not.toHaveBeenCalled();
   });
 
-  it("keeps a real-size QR code on the screen after a wrong code", async () => {
+  it("keeps the set-up step after a wrong code, without echoing the QR code", async () => {
     const d = deps({ verifyCode: () => Promise.resolve({ ok: false, reason: "wrong-code" }) });
     const enroll = {
       step: "enroll" as const,
       factorId: FACTOR,
-      qrCode: `data:image/svg+xml;utf-8,<svg>${"<path d='M0 0h1v1H0z'/>".repeat(1500)}</svg>`,
+      qrCode: "",
       secret: "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
     };
     expect(await codeStep({ factorId: FACTOR, code: "123456" }, enroll, "ip", d)).toEqual({
@@ -155,13 +155,25 @@ describe("codeStep", () => {
     });
   });
 
-  it("drops a tampered QR code from the previous state", async () => {
+  it("never reflects a QR code sent back by the browser, and drops a tampered state", async () => {
     const d = deps({ verifyCode: () => Promise.resolve({ ok: false, reason: "wrong-code" }) });
+    const echoed = await codeStep(
+      { factorId: FACTOR, code: "123456" },
+      {
+        step: "enroll",
+        factorId: FACTOR,
+        qrCode: "javascript:alert(1)",
+        secret: "JBSWY3DPEHPK3PXP",
+      },
+      "ip",
+      d,
+    );
+    expect(echoed !== "done" && echoed.step === "enroll" && echoed.qrCode).toBe("");
     const tampered = {
       step: "enroll" as const,
       factorId: FACTOR,
-      qrCode: "javascript:alert(1)",
-      secret: "JBSWY3DPEHPK3PXP",
+      qrCode: "",
+      secret: "not base32!",
     };
     expect(await codeStep({ factorId: FACTOR, code: "123456" }, tampered, "ip", d)).toEqual({
       step: "password",

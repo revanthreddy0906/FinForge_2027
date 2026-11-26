@@ -4,7 +4,17 @@ import { useActionState, useCallback } from "react";
 import { loginAction } from "@/app/admin/login/actions";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { initialLoginState } from "@/lib/admin/login-state";
+import {
+  initialLoginState,
+  keepQrCode,
+  withoutQrCode,
+  type LoginState,
+} from "@/lib/admin/login-state";
+
+/** Sends the previous state without the large QR image, and restores it afterwards. */
+async function submit(previous: LoginState, formData: FormData): Promise<LoginState> {
+  return keepQrCode(previous, await loginAction(withoutQrCode(previous), formData));
+}
 
 /** Groups the secret in fours so it's easier to type into an authenticator app. */
 function groupSecret(secret: string): string {
@@ -30,7 +40,7 @@ function ErrorBanner({ message }: { message?: string }) {
 }
 
 export function LoginForm() {
-  const [state, formAction, pending] = useActionState(loginAction, initialLoginState);
+  const [state, formAction, pending] = useActionState(submit, initialLoginState);
   const focusHeading = useCallback((el: HTMLHeadingElement | null) => el?.focus(), []);
 
   if (state.step === "password") {

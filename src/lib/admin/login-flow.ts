@@ -31,13 +31,10 @@ export interface LoginDeps {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function isSafeEnrollment(s: { factorId: unknown; qrCode: unknown; secret: unknown }): boolean {
+function isSafeEnrollment(s: { factorId: unknown; secret: unknown }): boolean {
   return (
     typeof s.factorId === "string" &&
     UUID.test(s.factorId) &&
-    typeof s.qrCode === "string" &&
-    s.qrCode.startsWith("data:image/svg+xml") &&
-    s.qrCode.length < 200_000 &&
     typeof s.secret === "string" &&
     /^[A-Z2-7]{16,64}$/.test(s.secret)
   );
@@ -105,14 +102,15 @@ export async function codeStep(
   ip: string,
   deps: LoginDeps,
 ): Promise<LoginState | "done"> {
-  // Keep showing the same step (and QR code, while enrolling) when the code is wrong. The
-  // previous state round-trips through the browser, so only well-formed values are kept.
+  // Keep showing the same step when the code is wrong. The previous state comes from the
+  // browser, so only well-formed values are kept. The QR code (a few hundred KB of SVG) is
+  // never sent back: the form keeps it, and an empty qrCode tells it to reuse its copy.
   const stay = (error: string): LoginState => {
     if (previous.step === "enroll" && isSafeEnrollment(previous)) {
       return {
         step: "enroll",
         factorId: previous.factorId,
-        qrCode: previous.qrCode,
+        qrCode: "",
         secret: previous.secret,
         error,
       };
@@ -123,7 +121,6 @@ export async function codeStep(
     // Only shapes and lengths are logged, never the values.
     console.warn("[admin] code step: previous state not reusable", {
       step: previous.step,
-      qrLength: previous.step === "enroll" ? previous.qrCode.length : undefined,
       secretLength: previous.step === "enroll" ? previous.secret.length : undefined,
     });
     return { step: "password", error: loginCopy.sessionLost };
