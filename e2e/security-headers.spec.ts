@@ -1,7 +1,7 @@
 import { expect, test } from "./fixtures";
 
 /** Pages that must carry the full header set and render without a single CSP violation. */
-const pages = ["/", "/register", "/no-such-page"];
+const pages = ["/", "/register", "/admin/login", "/no-such-page"];
 
 /** Collects CSP violations the browser reports, before any page script runs. */
 const recordViolations = `
