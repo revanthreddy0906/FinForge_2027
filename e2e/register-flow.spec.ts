@@ -44,5 +44,8 @@ test("rejects the same team name and a member already in a team", async ({ page 
   await page.getByLabel("Team name").fill(`Fresh ${run}`);
   await page.locator("#f-members-1-email").fill(team.members[2]?.email ?? "");
   await page.getByRole("button", { name: "Register team" }).click();
-  await expect(page.getByText(/use a different email for member 2/)).toBeVisible();
+  await expect(page.locator("#f-members-1-email-error")).toContainText(
+    "use a different email for member 2",
+  );
+  await expect(page.locator("#form-errors")).toContainText("Member 2:");
 });
