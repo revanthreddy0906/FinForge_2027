@@ -46,8 +46,19 @@
 | `UPSTASH_REDIS_REST_TOKEN`       | Upstash token               | same                                | **sensitive**, added by hand |
 | `TURNSTILE_HOSTNAMES`            | `finforge2027.vercel.app`   | `finforge2027-staging.vercel.app`   | plain                        |
 | `NEXT_PUBLIC_REGISTRATION_STATE` | never set                   | `open` (preview only)               | plain                        |
+| `RAZORPAY_KEY_ID`                | live key ID (`rzp_live_…`)  | test key ID (preview only)          | plain                        |
+| `RAZORPAY_KEY_SECRET`            | live key secret             | test key secret (preview only)      | **sensitive**, added by hand |
+| `RAZORPAY_WEBHOOK_SECRET`        | live webhook secret         | test webhook secret (preview only)  | **sensitive**, added by hand |
 
-`FINFORGE_ALLOW_MEMORY_RATE_LIMIT` is never set on Vercel.
+The branch `claude/project-thread-0e0o8b` also has branch-only overrides for Cloudflare's
+always-pass Turnstile test keys (its preview URL is not on the widget's hostname list). Delete
+them once payments are tested on `finforge2027-staging.vercel.app`.
+
+`FINFORGE_ALLOW_MEMORY_RATE_LIMIT` and `RAZORPAY_API_BASE` are never set on Vercel.
+
+Razorpay webhook (dashboard > Account & Settings > Webhooks, once in Test mode and once in Live
+mode): URL `https://<site>/api/payments/webhook`, events `payment.captured` and `order.paid`,
+and a secret that you then paste into `RAZORPAY_WEBHOOK_SECRET` for the same environment.
 
 Secrets are added in the Vercel dashboard (Project > Settings > Environment Variables > Add,
 "Sensitive" on), never pasted into chat or committed. A change to any variable only applies to
