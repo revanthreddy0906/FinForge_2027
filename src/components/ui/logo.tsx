@@ -14,7 +14,7 @@ export function Logo() {
       <span className="flex flex-col">
         <span className="font-display text-[1.5rem] leading-[1.625rem] font-medium text-text-primary">
           FinForge
-        </span>
+        </span>{" "}
         <span className="text-eyebrow text-text-accent">2027</span>
       </span>
     </span>
