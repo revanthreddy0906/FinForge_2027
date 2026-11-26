@@ -49,8 +49,25 @@ Logo, Button (Primary/Secondary/Ghost × Default/Hover/Pressed/Focus/Disabled), 
 Input (Default/Focus/Error/Disabled), Section header (Left/Center), Card (Default/Highlight ×
 Default/Hover), Timeline item (Past/Current/Upcoming), FAQ item (Collapsed/Expanded/Focus),
 Nav (Desktop, Mobile closed, Mobile open). Each component's description in Figma documents its
-states, motion and accessibility notes. React components and Code Connect mappings come in build
-step 4.
+states, motion and accessibility notes.
+
+## Figma component ↔ React component
+
+Code Connect needs a Dev or Full seat on an Organization or Enterprise plan; the Figma API refused
+the mapping on the current Starter plan (26 Nov 2026). This table is the mapping to register once
+the plan allows it (`add_code_connect_map` or `@figma/code-connect` files).
+
+| Figma component | Node  | React component                            | Props ↔ variants                                   |
+| --------------- | ----- | ------------------------------------------ | -------------------------------------------------- |
+| Logo            | 4:2   | `Logo` in `src/components/ui/logo.tsx`     | none                                               |
+| Button          | 4:54  | `ButtonLink` / `Button` in `ui/button.tsx` | `variant` = Primary/Secondary/Ghost; `arrow`       |
+| Badge           | 4:68  | `Badge` in `ui/badge.tsx`                  | `tone` = Neutral/Accent/Success/Danger             |
+| Input           | 4:90  | not built yet (registration form step)     |                                                    |
+| Section header  | 5:16  | `SectionHeader` in `ui/section-header.tsx` | `align` = Left/Center; `index`, `eyebrow`, `title` |
+| Card            | 5:38  | `Card` in `ui/card.tsx`                    | `highlight` = Highlight variant                    |
+| Timeline item   | 5:64  | `TimelineItem` in `ui/timeline-item.tsx`   | `status` = Past/Current/Upcoming                   |
+| FAQ item        | 5:87  | `FaqItem` in `ui/faq-item.tsx`             | `defaultOpen` = Expanded                           |
+| Nav             | 5:151 | `SiteNav` in `src/components/site-nav.tsx` | breakpoint picks Desktop/Mobile; menu state        |
 
 The logo in Figma is a typographic stand-in (₹ mark + Bodoni wordmark) until the official SVG is
 supplied.
