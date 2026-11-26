@@ -92,6 +92,9 @@ Last updated: 2026-11-26
   - Public env vars set; secrets (Supabase secret key, Turnstile secret, Upstash token) are added
     by hand in the dashboard
   - Preview checked: all security headers present, Turnstile script loads under the CSP
+  - End-to-end on staging (27 Nov 2026, Safari): real Turnstile widget, server-side siteverify
+    with action + hostname checks, Upstash rate limit, saved to the staging database (FF27-0043,
+    2 members)
 
 ## Pending
 
