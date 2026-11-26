@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   startTransition,
   useActionState,
+  useCallback,
   useMemo,
   useRef,
   useState,
@@ -87,7 +88,9 @@ const inputId = (path: string) => `f-${path.replace(/\./g, "-")}`;
 
 export function RegistrationForm({ siteKey }: { siteKey: string }) {
   const summaryRef = useRef<HTMLDivElement>(null);
-  const successRef = useRef<HTMLHeadingElement>(null);
+  // The success view replaces the form, so focus its heading once it mounts. A requestAnimationFrame
+  // from the action can fire before React commits the transition, when the heading doesn't exist yet.
+  const focusOnMount = useCallback((el: HTMLHeadingElement | null) => el?.focus(), []);
   const [serverErrors, setServerErrors] = useState<FieldErrors>(new Map());
   const [summary, setSummary] = useState<string | null>(null);
   const [resetSignal, setResetSignal] = useState(0);
@@ -100,8 +103,6 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
         setSummary(next.message);
         setResetSignal((n) => n + 1); // a Turnstile token works once
         requestAnimationFrame(() => summaryRef.current?.focus());
-      } else if (next.status === "success") {
-        requestAnimationFrame(() => successRef.current?.focus());
       }
       return next;
     },
@@ -213,7 +214,7 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
         <p className="text-eyebrow text-text-success uppercase">Registration confirmed</p>
         <h2
           id="success-title"
-          ref={successRef}
+          ref={focusOnMount}
           tabIndex={-1}
           className="font-display text-heading-2 text-text-primary"
         >
