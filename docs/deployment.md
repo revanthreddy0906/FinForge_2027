@@ -4,6 +4,9 @@
 
 - Vercel project `finforge-2027` (Hobby plan), linked to `revanthreddy0906/FinForge_2027`.
 - Framework Next.js, Node 24.x, Vercel Functions in `bom1` (Mumbai, next to Supabase `ap-south-1`).
+- Domains: `finforge2027.vercel.app` (production) and `finforge2027-staging.vercel.app` (staging,
+  pinned to the branch `claude/project-thread-gm74rs`). Both must be in the Turnstile widget's
+  hostname list.
 - Every push to a branch other than `main` builds a **preview** (staging). Previews are behind
   Vercel Authentication (Standard Protection), so only signed-in team members can open them.
 - `main` is the production branch. **Production builds are paused** with an Ignored Build Step
