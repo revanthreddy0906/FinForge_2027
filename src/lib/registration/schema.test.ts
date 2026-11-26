@@ -12,7 +12,7 @@ const valid = {
   institution: "CBIT",
   leaderPhone: "98765 43210",
   consent: true,
-  idempotencyKey: "6f1c2c1e-6b6b-4b5c-9a6e-2f3d4c5b6a7e",
+  idempotencyKey: crypto.randomUUID(),
   members: [
     { fullName: "Asha Rao", email: " Asha@Example.com " },
     { fullName: "Vik Reddy", email: "vik@example.com" },

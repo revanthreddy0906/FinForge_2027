@@ -92,8 +92,17 @@ test.describe("registration page", () => {
     await fillTeam(page, team);
     const submit = page.getByRole("button", { name: "Register team" });
 
-    // No database is configured in this run, so the server answers with an error.
-    await submit.click();
+    const submitOnce = async () => {
+      const response = page.waitForResponse(
+        (r) => r.request().method() === "POST" && new URL(r.url()).pathname === "/register",
+      );
+      await submit.click();
+      await response;
+      await expect(submit).toBeEnabled();
+    };
+
+    // This server has no database, so the server answers with an error.
+    await submitOnce();
     const alert = page.locator("#form-errors");
     await expect(alert).toBeVisible();
     await expect(alert).not.toContainText("Too many attempts");
@@ -101,11 +110,8 @@ test.describe("registration page", () => {
     await expect(page.locator("#f-members-1-email")).toHaveValue("vik@example.com");
 
     // 5 attempts per minute per IP: the 6th is refused.
-    for (let i = 0; i < 4; i++) {
-      await submit.click();
-      await expect(submit).toBeEnabled();
-    }
-    await submit.click();
+    for (let i = 0; i < 4; i++) await submitOnce();
+    await submitOnce();
     await expect(alert).toContainText("Too many attempts");
   });
 });

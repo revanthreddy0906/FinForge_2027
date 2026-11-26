@@ -1,11 +1,10 @@
 import { expect, fillTeam, test } from "./fixtures";
 
 /**
- * Full flow against the staging database. Runs only when E2E_SUPABASE_URL and
- * E2E_SUPABASE_SECRET_KEY are set (staging project, never production). Leaves test rows
- * in staging; clean them up with supabase/tests/cleanup_staging.sql.
+ * Full flow against the staging database (projects "*-staging-db" in playwright.config.ts,
+ * which exist only when the staging secrets are set). Leaves test rows in staging; clean them
+ * up with supabase/tests/cleanup_staging.sql.
  */
-test.skip(!process.env.E2E_SUPABASE_URL, "needs the staging database");
 test.describe.configure({ mode: "serial" });
 
 const run = `${String(Date.now())}-${Math.random().toString(36).slice(2, 8)}`;
