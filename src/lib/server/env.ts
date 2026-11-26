@@ -5,6 +5,7 @@ const schema = z.object({
   SUPABASE_URL: z.url(),
   SUPABASE_SECRET_KEY: z.string().min(20),
   TURNSTILE_SECRET_KEY: z.string().min(10),
+  TURNSTILE_HOSTNAMES: z.string().optional(),
   UPSTASH_REDIS_REST_URL: z.url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(10).optional(),
 });
@@ -25,6 +26,7 @@ export function serverEnv(): ServerEnv {
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
     TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
+    TURNSTILE_HOSTNAMES: optional(process.env.TURNSTILE_HOSTNAMES),
     UPSTASH_REDIS_REST_URL: optional(process.env.UPSTASH_REDIS_REST_URL),
     UPSTASH_REDIS_REST_TOKEN: optional(process.env.UPSTASH_REDIS_REST_TOKEN),
   });

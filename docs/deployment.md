@@ -33,6 +33,7 @@
 | `TURNSTILE_SECRET_KEY`           | FinForge widget secret      | same                                | **sensitive**, added by hand |
 | `UPSTASH_REDIS_REST_URL`         | Upstash database URL        | same                                | plain                        |
 | `UPSTASH_REDIS_REST_TOKEN`       | Upstash token               | same                                | **sensitive**, added by hand |
+| `TURNSTILE_HOSTNAMES`            | `finforge2027.vercel.app`   | `finforge2027-staging.vercel.app`   | plain                        |
 | `NEXT_PUBLIC_REGISTRATION_STATE` | never set                   | `open` (preview only)               | plain                        |
 
 `FINFORGE_ALLOW_MEMORY_RATE_LIMIT` is never set on Vercel.

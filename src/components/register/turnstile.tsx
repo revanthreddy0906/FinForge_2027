@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { TURNSTILE_ACTION } from "@/lib/registration/turnstile-check";
 
 interface TurnstileApi {
   render: (
     el: HTMLElement,
     options: {
       sitekey: string;
+      action?: string;
       theme?: "light" | "dark" | "auto";
       size?: "normal" | "flexible" | "compact";
       "response-field-name"?: string;
@@ -79,6 +81,7 @@ export function Turnstile({ siteKey, resetSignal, onToken, onLoadError }: Turnst
         if (cancelled || !el || !window.turnstile) return;
         widgetRef.current = window.turnstile.render(el, {
           sitekey: siteKey,
+          action: TURNSTILE_ACTION,
           theme: "dark",
           size: "flexible",
           callback: (token) => {
