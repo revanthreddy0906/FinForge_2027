@@ -50,13 +50,24 @@ Last updated: 2026-11-26
   - Server action: registration state check, rate limit (5/min per IP, Upstash; in-memory only
     for local tests), Zod validation shared with the form, Turnstile verification, save through
     `register_team`, friendly messages for every database rule
-  - Page is static (no database read on render); `NEXT_PUBLIC_REGISTRATION_STATE` can force a
+  - No database read on render; `NEXT_PUBLIC_REGISTRATION_STATE` can force a
     state for staging previews and e2e tests
   - Staging Supabase project `FinForge_2027_staging` (ref `iylwxuxotglsshkaoayx`) with the same
     migrations, advisors clean
   - Tests: Vitest 55 pass; Playwright (desktop + 360px) 14 pass in CI, axe WCAG 2.1 AA 0
     violations, including the database flow tests (success, duplicate name, email in another
     team) against staging via the `E2E_SUPABASE_URL` and `E2E_SUPABASE_SECRET_KEY` secrets
+
+- **Step 7, security headers + CSP** (ADR `docs/adr/0002-content-security-policy.md`)
+  - Nonce-based CSP per request in `src/proxy.ts`: scripts only by nonce + `'strict-dynamic'`, no
+    `unsafe-inline`/`unsafe-eval` in production; `frame-ancestors 'none'`, `object-src 'none'`,
+    `base-uri`/`form-action 'self'`; Turnstile allowed for script and frame
+  - Static headers in `next.config.ts`: HSTS (2 years, subdomains, no preload yet), nosniff,
+    Referrer-Policy, X-Frame-Options DENY, Permissions-Policy, COOP
+  - Pages now render per request (needed for nonces); no database reads on render
+  - Tests: Vitest for the CSP builder; Playwright `e2e/security-headers.spec.ts` checks every
+    header, a fresh nonce per response on every script, and zero CSP violations on `/`,
+    `/register` (with Turnstile) and the 404 page, at desktop and 360px
 
 ## Pending
 
@@ -87,7 +98,11 @@ Last updated: 2026-11-26
   localhost for now; add the production domain in Cloudflare).
 - Confirmation email is switched off: Resend needs a verified domain, and FinForge has none yet.
   The on-screen team reference is the proof of registration. See `src/lib/server/confirmation-email.ts`.
-- CSP (build step 4) must allow `https://challenges.cloudflare.com` for script and frame.
+- CSP: the real Turnstile iframe could not be loaded from the cloud test machine (Cloudflare is
+  blocked there); tests use a stand-in. Check the live widget on the first preview deploy, and get
+  the securityheaders.com grade there too.
+- CSP: if browser code calls Supabase directly, set `NEXT_PUBLIC_SUPABASE_URL` so `connect-src`
+  allows it. Sentry will need its ingest origin added.
 - Supabase free projects pause after a week of inactivity: keep `FinForge_2027` active or upgrade
   before registration opens.
 
