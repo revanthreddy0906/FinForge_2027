@@ -37,7 +37,7 @@ function isSafeEnrollment(s: { factorId: unknown; qrCode: unknown; secret: unkno
     UUID.test(s.factorId) &&
     typeof s.qrCode === "string" &&
     s.qrCode.startsWith("data:image/svg+xml") &&
-    s.qrCode.length < 20_000 &&
+    s.qrCode.length < 200_000 &&
     typeof s.secret === "string" &&
     /^[A-Z2-7]{16,64}$/.test(s.secret)
   );

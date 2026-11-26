@@ -141,6 +141,20 @@ describe("codeStep", () => {
     expect(d.verifyCode).not.toHaveBeenCalled();
   });
 
+  it("keeps a real-size QR code on the screen after a wrong code", async () => {
+    const d = deps({ verifyCode: () => Promise.resolve({ ok: false, reason: "wrong-code" }) });
+    const enroll = {
+      step: "enroll" as const,
+      factorId: FACTOR,
+      qrCode: `data:image/svg+xml;utf-8,<svg>${"<path d='M0 0h1v1H0z'/>".repeat(1500)}</svg>`,
+      secret: "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
+    };
+    expect(await codeStep({ factorId: FACTOR, code: "123456" }, enroll, "ip", d)).toEqual({
+      ...enroll,
+      error: loginCopy.wrongCode,
+    });
+  });
+
   it("drops a tampered QR code from the previous state", async () => {
     const d = deps({ verifyCode: () => Promise.resolve({ ok: false, reason: "wrong-code" }) });
     const tampered = {
