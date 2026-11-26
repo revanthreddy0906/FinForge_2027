@@ -34,7 +34,28 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run build
-      # Added in later build steps: Playwright e2e, Lighthouse CI, Semgrep.
+      # Added in later build steps: Lighthouse CI, Semgrep.
+
+  e2e:
+    name: Playwright e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Staging database only (never production). When these secrets are absent, the
+      # database-backed flow tests are skipped and the rest still run.
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_SECRET_KEY: ${{ secrets.E2E_SUPABASE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
 
   audit:
     name: npm audit (high and critical)
