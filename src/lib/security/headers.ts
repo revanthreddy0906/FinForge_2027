@@ -15,6 +15,13 @@ export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
  */
 export const RAZORPAY_SCRIPT_ORIGIN = "https://checkout.razorpay.com";
 export const RAZORPAY_FRAME_ORIGINS = ["https://api.razorpay.com", RAZORPAY_SCRIPT_ORIGIN] as const;
+/**
+ * checkout.js adds one fixed <style> element (its spinner and the pop-up's mobile layout), which
+ * can't carry our nonce, so it is allowed by hash. If Razorpay changes that CSS, the browser
+ * console shows a CSP error with the new hash and the pop-up loses its mobile layout until this
+ * is updated (the staging payment check looks for CSP errors).
+ */
+export const RAZORPAY_STYLE_HASH = "'sha256-VYoJM+B5VwF3YDs5YIEt5XASBqk8M2apkiuz5wugOu4='";
 export const RAZORPAY_CONNECT_ORIGINS = [
   "https://api.razorpay.com",
   "https://lumberjack.razorpay.com",
@@ -73,7 +80,12 @@ export function buildCsp({
     // Style elements need the nonce. Style attributes stay allowed: Motion and our CSS custom
     // properties (--i stagger index) render them, and an attribute cannot run script.
     // (`next dev` injects un-nonced style tags for its overlay and hot reload, so dev relaxes this.)
-    ["style-src", "'self'", isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`],
+    [
+      "style-src",
+      "'self'",
+      isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`,
+      ...(razorpay && !isDev ? [RAZORPAY_STYLE_HASH] : []),
+    ],
     ["style-src-attr", "'unsafe-inline'"],
     ["img-src", "'self'", "data:", "blob:"],
     ["font-src", "'self'"],

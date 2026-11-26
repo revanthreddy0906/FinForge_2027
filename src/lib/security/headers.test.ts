@@ -3,6 +3,7 @@ import {
   buildCsp,
   createNonce,
   RAZORPAY_SCRIPT_ORIGIN,
+  RAZORPAY_STYLE_HASH,
   securityHeaders,
   TURNSTILE_ORIGIN,
 } from "./headers";
@@ -98,6 +99,7 @@ describe("buildCsp with Razorpay", () => {
       "https://lumberjack.razorpay.com",
     ]);
     expect(csp.get("form-action")).toEqual(["'self'"]);
+    expect(csp.get("style-src")).toEqual(["'self'", "'nonce-abc123=='", RAZORPAY_STYLE_HASH]);
   });
 });
 
