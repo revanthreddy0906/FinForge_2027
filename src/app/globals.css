@@ -337,6 +337,81 @@
   }
 }
 
+@keyframes heist-bob {
+  to {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes heist-sway {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes heist-peek {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0);
+  }
+  80%,
+  90% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes heist-crawl {
+  to {
+    transform: translateX(14px);
+  }
+}
+
+@keyframes heist-twinkle {
+  50% {
+    opacity: 0.2;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes heist-sweep {
+  from {
+    transform: rotate(-1.2deg);
+  }
+  to {
+    transform: rotate(1.2deg);
+  }
+}
+
+@keyframes heist-flash {
+  0%,
+  40%,
+  80% {
+    opacity: 1;
+  }
+  20%,
+  60% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes vault-coin {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1);
+  }
+}
+
 @layer components {
   .hero-rise,
   .hero-wipe,
@@ -417,6 +492,86 @@
     animation-name: vault-jiggle-again;
   }
 
+  /* Register "coming soon" heist board (src/components/register/heist-board.tsx). */
+  /*
+   * Hand-written notes in Bodoni italic. The italic shares the "Bodoni Moda" family name, so
+   * any italic text would fetch its files before first paint (~0.4s of FCP on a slow phone).
+   * Notes start upright and EyeTracker sets [data-italic] after hydration to slant them.
+   */
+  .hand-note {
+    font-family: var(--font-display);
+    font-weight: 500;
+  }
+
+  [data-italic] .hand-note {
+    font-family: var(--font-bodoni-italic), var(--font-display);
+    font-style: italic;
+  }
+
+  .heist-grid {
+    background-image:
+      linear-gradient(var(--color-bg-surface) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-bg-surface) 1px, transparent 1px);
+    background-size: 3rem 3rem;
+    opacity: 0.55;
+    mask-image: radial-gradient(ellipse at 50% 45%, #000 30%, transparent 75%);
+  }
+
+  /* Margin doodles mount after hydration on wide screens; fade them in rather than pop. */
+  .heist-appear {
+    animation: fade var(--duration-slower) var(--ease-out-expo) both;
+  }
+
+  .heist-lasers {
+    opacity: 0.5;
+    animation: heist-sweep 14s var(--ease-in-out) infinite alternate;
+  }
+
+  [data-heist][data-cracked] .heist-lasers {
+    animation: heist-flash 900ms linear 2;
+  }
+
+  .heist-bob {
+    animation: heist-bob 3.2s var(--ease-in-out) infinite alternate;
+    animation-delay: calc(var(--i, 0) * -700ms);
+  }
+
+  .heist-sway {
+    transform-origin: 60% 0;
+    animation: heist-sway 4s var(--ease-in-out) infinite alternate;
+  }
+
+  .heist-peek {
+    animation: heist-peek 7s var(--ease-in-out) infinite;
+  }
+
+  .heist-crawl {
+    animation: heist-crawl 2.4s var(--ease-in-out) infinite alternate;
+  }
+
+  .heist-twinkle {
+    animation: heist-twinkle 2.8s var(--ease-in-out) infinite;
+    animation-delay: calc(var(--i, 0) * -500ms);
+  }
+
+  .heist-blink {
+    animation: fade 1.2s steps(2, jump-none) infinite alternate;
+  }
+
+  .vault-door {
+    transform-origin: 4% 50%;
+    transition: transform var(--duration-slower) var(--ease-out-expo);
+  }
+
+  .vault-door.is-open {
+    transform: perspective(700px) rotateY(-72deg);
+  }
+
+  .vault-coin {
+    animation: vault-coin 1.6s var(--ease-out-quart) both;
+    animation-delay: calc(150ms + var(--i, 0) * 30ms);
+  }
+
   /* Timeline rail draws with scroll where the browser supports scroll-driven animations. */
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
@@ -446,8 +601,24 @@
     /* The vault stays still; pressing it only changes the line of text. */
     .vault-spin,
     .vault-jiggle-a,
-    .vault-jiggle-b {
+    .vault-jiggle-b,
+    .heist-lasers,
+    [data-heist][data-cracked] .heist-lasers,
+    .heist-bob,
+    .heist-sway,
+    .heist-peek,
+    .heist-crawl,
+    .heist-twinkle,
+    .heist-blink {
       animation: none;
+    }
+
+    .vault-door {
+      transition: none;
+    }
+
+    .vault-coin {
+      display: none;
     }
   }
 }

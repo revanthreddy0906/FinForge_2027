@@ -2,7 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { bodoni, inter } from "./fonts";
+import { bodoni, bodoniItalic, inter } from "./fonts";
 import "./globals.css";
 
 /**
@@ -27,7 +27,10 @@ const onVercel = process.env.VERCEL === "1";
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   await connection();
   return (
-    <html lang="en" className={`${bodoni.variable} ${inter.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${bodoni.variable} ${bodoniItalic.variable} ${inter.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">
         {children}
         {/* Cookieless, first-party (/_vercel/*) and loaded after the page; see docs/deployment.md. */}

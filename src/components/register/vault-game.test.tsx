@@ -1,10 +1,9 @@
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { VaultDial } from "./vault-dial";
-import { vaultPrompt } from "./vault-quips";
+import { VaultGame } from "./vault-game";
 
-describe("VaultDial", () => {
-  const html = renderToString(<VaultDial />);
+describe("VaultGame", () => {
+  const html = renderToString(<VaultGame dateLabel="20–21 March 2027" />);
 
   it("is a labelled button with the artwork hidden from screen readers", () => {
     expect(html).toMatch(
@@ -14,14 +13,14 @@ describe("VaultDial", () => {
   });
 
   it("renders the polite live region with the prompt on the server", () => {
-    expect(html).toMatch(
-      /<p[^>]*id="vault-quip"[^>]*aria-live="polite"[^>]*>Go on, try the dial\.<\/p>/,
-    );
-    expect(html).toContain(vaultPrompt.replace("'", "&#x27;"));
+    expect(html).toMatch(/<p[^>]*aria-live="polite"[^>]*>Go on, try the dial\.<\/p>/);
   });
 
-  it("ticks the dial with the spin class only", () => {
+  it("starts with a zero try counter, a ticking dial and the door shut", () => {
+    expect(html).toContain("Break-ins tried");
     expect(html).toContain("vault-spin");
+    expect(html).not.toContain("is-open");
+    expect(html).not.toContain("vault-coin");
     expect(html).not.toContain("vault-jiggle");
   });
 });

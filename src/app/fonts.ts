@@ -13,3 +13,16 @@ export const inter = Inter({
   display: "swap",
   variable: "--font-inter",
 });
+
+/**
+ * Italic Bodoni for the hand-written notes on the "coming soon" vault page. Declared in the
+ * root layout so its @font-face ships in the main stylesheet, but not preloaded: the files only
+ * download on pages that use it.
+ */
+export const bodoniItalic = Bodoni_Moda({
+  subsets: ["latin"],
+  style: "italic",
+  display: "swap",
+  preload: false,
+  variable: "--font-bodoni-italic",
+});
