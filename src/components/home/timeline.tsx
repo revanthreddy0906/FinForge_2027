@@ -4,11 +4,15 @@ import { TimelineItem, type TimelineStatus } from "../ui/timeline-item";
 import { SectionHeader } from "../ui/section-header";
 import { Section } from "./section";
 
-/** Status from real dates only. With no dates yet, the hackathon itself is the highlighted step. */
+/**
+ * Status from real dates only. The next dated step still to come is highlighted, so the
+ * hackathon stays the highlighted step until its day; with no dates at all, the hackathon is.
+ */
 function statusOf(entry: TimelineEntry, index: number, today: string): TimelineStatus {
-  if (entry.date)
-    return entry.date < today ? "past" : entry.date === today ? "current" : "upcoming";
-  return index === 2 ? "current" : "upcoming";
+  if (entry.date && entry.date < today) return "past";
+  const anyDated = event.timeline.some((e) => e.date !== null);
+  const next = event.timeline.findIndex((e) => e.date !== null && e.date >= today);
+  return index === (anyDated ? next : 2) ? "current" : "upcoming";
 }
 
 /** Today's date (UTC), re-evaluated hourly so past steps flip without a redeploy. */
@@ -31,7 +35,7 @@ export async function Timeline() {
           title="From sign-up to demo day"
           description={
             <>
-              Exact dates are announced soon. Follow{" "}
+              The hackathon runs {event.dateLabel}. Registration dates are announced soon. Follow{" "}
               <a
                 href={event.instagram.url}
                 className="text-text-accent underline decoration-border-frame underline-offset-4"

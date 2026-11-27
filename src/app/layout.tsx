@@ -15,7 +15,7 @@ export const instant = false;
 export const metadata: Metadata = {
   title: "FinForge 2027",
   description:
-    "FinForge 2027 is a Fraud Detection and Cybersecurity hackathon by FinFoundry in Hyderabad, March 2027.",
+    "FinForge 2027 by CBIT FinFoundry: Hyderabad's first AI x FinTech innovation festival, with a 24-hour fraud detection and cybersecurity hackathon at JHCC, 20–21 March 2027.",
 };
 
 /**

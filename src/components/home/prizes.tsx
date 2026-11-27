@@ -28,9 +28,10 @@ export function Prizes() {
           </ul>
         ) : (
           // TODO: prize breakdown by position and track.
-          <p className="max-w-[22rem] text-body text-text-secondary">
-            The split by position and track is announced with the problem statements.
-          </p>
+          <div className="flex max-w-[24rem] flex-col gap-sm text-body text-text-secondary">
+            <p>Plus {event.prizeExtras}. The split by position is announced soon.</p>
+            <p>With only {String(event.teamCount)} teams competing, every seat counts.</p>
+          </div>
         )}
       </div>
     </Section>

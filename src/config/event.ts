@@ -32,12 +32,24 @@ export const event = {
   organiserDescription: "the financial club of CBIT",
   tagline: "Plan · Build · Earn · Inspire",
   theme: "Fraud detection and cybersecurity",
+  headline: "Where the future of finance gets built",
+  /** How the event describes itself: a two-day festival around a 24-hour hackathon. */
+  format: "Hyderabad's first AI x FinTech innovation festival",
+  durationDays: 2,
+  hackathonHours: 24,
+  /**
+   * Teams that compete, from the event document. Display only: the registration cap is
+   * private.event_settings.max_teams in the database. TODO: confirm whether to set that cap to 75.
+   */
+  teamCount: 75,
+  /** Engineering colleges the participants come from. */
+  collegeCount: 25,
 
-  // TODO: exact dates. Keep null until fixed; JSON-LD must not get guessed dates.
-  startDate: null as string | null,
-  endDate: null as string | null,
-  dateLabel: "2nd week of March 2027",
-  shortDateLabel: "March 2027",
+  /** ISO dates (YYYY-MM-DD) from the official event document. */
+  startDate: "2027-03-20" as string | null,
+  endDate: "2027-03-21" as string | null,
+  dateLabel: "20–21 March 2027",
+  shortDateLabel: "20–21 Mar 2027",
 
   venue: {
     name: "Jubilee Hills Convention Centre",
@@ -56,6 +68,7 @@ export const event = {
 
   /** Rupees. */
   prizePool: 300_000,
+  prizeExtras: "API credits and curated prizes from our partners",
   // TODO: prize breakdown by position and track.
   prizeBreakdown: null as null | readonly { label: string; amount: number }[],
 
@@ -63,7 +76,10 @@ export const event = {
   registration: registrationState("coming-soon"),
   registrationPath: "/register",
 
-  // TODO: tracks. Placeholders render until real tracks are announced.
+  /** Judging criteria, in the order the event document lists them. */
+  judgingCriteria: ["Financial impact", "Technical rigor", "Responsible AI", "Deployability"],
+
+  // TODO: tracks and problem statements (to be released; revealed minutes before the timer starts).
   tracks: null as null | readonly { title: string; description: string }[],
 
   // TODO: sponsors.
@@ -86,9 +102,10 @@ export const event = {
     },
     {
       title: "The hackathon",
-      description: "Build at Jubilee Hills Convention Centre, Hyderabad.",
-      date: null,
-      dateLabel: "2nd week of March 2027",
+      description:
+        "Two days at Jubilee Hills Convention Centre, Hyderabad, with a 24-hour build at the centre.",
+      date: "2027-03-20",
+      dateLabel: "20–21 March 2027",
     },
     {
       title: "Results",

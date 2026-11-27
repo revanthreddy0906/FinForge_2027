@@ -6,7 +6,7 @@ import { Section } from "./section";
 const faqs = [
   {
     q: "Who can take part?",
-    a: `College students, in teams of ${teamSizeLabel}. One person registers the whole team.`,
+    a: `College students, in teams of ${teamSizeLabel}. One person registers the whole team. Only ${String(event.teamCount)} teams compete.`,
   },
   {
     q: "How big can a team be?",
@@ -14,7 +14,15 @@ const faqs = [
   },
   {
     q: "Where and when is it?",
-    a: `${venueLabel}, in the ${event.dateLabel}. Exact dates are announced soon.`,
+    a: `${venueLabel}, on ${event.dateLabel}. It's a two-day festival with a ${String(event.hackathonHours)}-hour hackathon at its centre.`,
+  },
+  {
+    q: "When do we get the problem statements?",
+    a: "Minutes before the timer starts. Come prepared on how fraud works, how it's detected, what makes a strong solution, and the financial and regulatory context.",
+  },
+  {
+    q: "How are projects judged?",
+    a: `On ${event.judgingCriteria.join(", ").toLowerCase()}, by a panel from finance and technology.`,
   },
   {
     q: "When does registration open?",

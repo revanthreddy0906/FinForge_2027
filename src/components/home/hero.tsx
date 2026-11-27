@@ -55,8 +55,9 @@ export function Hero() {
             </span>
           </h1>
           <p className="hero-rise max-w-[36rem] text-body-lg text-text-secondary" style={i(4)}>
-            A hackathon on fraud detection and cybersecurity. Build the systems that keep money
-            safe.
+            {event.format}: two days and a {String(event.hackathonHours)}-hour hackathon on fraud
+            detection and cybersecurity. Only {String(event.teamCount)} teams. Build the systems
+            that keep money safe.
           </p>
           <dl className="hero-rise flex flex-col gap-md md:flex-row md:gap-xl" style={i(5)}>
             {facts.map(([k, v]) => (
