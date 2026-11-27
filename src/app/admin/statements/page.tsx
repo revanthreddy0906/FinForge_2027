@@ -228,7 +228,8 @@ async function Panel({ searchParams }: { searchParams: Promise<Params> }) {
         <h2 id="slots-title" className="font-display text-heading-3 text-text-primary">
           Slots
         </h2>
-        <div className="overflow-x-auto">
+        {/* Focusable so keyboard users can scroll it on narrow screens. */}
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-labelledby="slots-title">
           <table className="w-full min-w-[32rem] text-left text-body-sm" data-testid="slots">
             <thead className="text-eyebrow text-text-secondary uppercase">
               <tr>
@@ -328,7 +329,7 @@ async function Panel({ searchParams }: { searchParams: Promise<Params> }) {
           Rankings use statement numbers, 1st choice first:{" "}
           {problemStatements.map((s) => `${String(s.id)}. ${s.title}`).join(" · ")}
         </p>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-labelledby="teams-title">
           <table
             className="w-full min-w-[48rem] text-left text-body-sm"
             data-testid="selection-teams"
