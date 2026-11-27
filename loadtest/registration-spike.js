@@ -36,7 +36,7 @@ function submit(team, clientId, tag) {
     headers: actionHeaders(clientId),
     tags: { page: tag },
   });
-  submitTime.add(res.timings.duration);
+  submitTime.add(res.timings.duration, { page: tag });
   return { res, result: actionResult(res) };
 }
 

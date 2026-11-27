@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { retryOnThrottle } from "@/lib/payments/retry";
 import { orderId, paymentEntitySchema, type PaymentEntity } from "@/lib/payments/schema";
 import { razorpayEnv } from "./razorpay-env";
 
@@ -65,15 +66,21 @@ export async function createOrder(input: {
   receipt: string;
   notes: Record<string, string>;
 }): Promise<z.infer<typeof orderSchema>> {
-  const body = await call("/v1/orders", {
-    method: "POST",
-    body: {
-      amount: input.amountPaise,
-      currency: "INR",
-      receipt: input.receipt,
-      notes: input.notes,
-    },
-  });
+  // Razorpay throttles bursts of order creation (HTTP 429). A throttled request creates nothing,
+  // so it is retried a few times before the user sees "couldn't start the payment".
+  const body = await retryOnThrottle(
+    () =>
+      call("/v1/orders", {
+        method: "POST",
+        body: {
+          amount: input.amountPaise,
+          currency: "INR",
+          receipt: input.receipt,
+          notes: input.notes,
+        },
+      }),
+    { isThrottle: (e) => e instanceof RazorpayError && e.status === 429 },
+  );
   const order = orderSchema.parse(body);
   if (order.amount !== input.amountPaise) throw new RazorpayError("order amount differs", 502);
   return order;
