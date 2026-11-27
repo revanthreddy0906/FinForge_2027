@@ -43,12 +43,12 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testMatch: /(register-form|security-headers|admin-login)\.spec\.ts/,
+      testMatch: /(register-form|security-headers|admin-login|statements-page)\.spec\.ts/,
       use: { ...desktop, baseURL: `http://localhost:${String(NO_DB_PORT)}` },
     },
     {
       name: "mobile",
-      testMatch: /(register-form|security-headers|admin-login)\.spec\.ts/,
+      testMatch: /(register-form|security-headers|admin-login|statements-page)\.spec\.ts/,
       use: { ...mobile, baseURL: `http://localhost:${String(NO_DB_PORT)}` },
     },
     ...(hasStaging
@@ -67,6 +67,12 @@ export default defineConfig({
             // One device only: the flow signs one shared test organizer in and out.
             name: "admin-staging-db",
             testMatch: /admin-flow\.spec\.ts/,
+            use: { ...mobile, baseURL: `http://localhost:${String(DB_PORT)}` },
+          },
+          {
+            // One device only: the flow changes staging's shared selection state.
+            name: "selection-staging-db",
+            testMatch: /statements-flow\.spec\.ts/,
             use: { ...mobile, baseURL: `http://localhost:${String(DB_PORT)}` },
           },
         ]
