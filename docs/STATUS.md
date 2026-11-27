@@ -146,8 +146,8 @@ Last updated: 2026-11-27
 - Problem statements: texts and slot limits are TODO (provisional 19 each, in
   `src/config/problem-statements.ts` and `private.problem_statements`). Revanth will confirm
   them, and one statement may take an extra team, handled by hand.
-- Problem statements: apply migrations `20261127100000`, `20261127100100` and `20261127100200`
-  to production.
+- Problem statements: migrations applied to production on 27 Nov 2026 (advisors clean; window
+  not open, results unpublished, 19 slots each).
   Run the staging e2e flow (`e2e/statements-flow.spec.ts`, in CI) and a k6 burst of 75 submits
   from one IP before event day. Make the QR code once the production domain is final.
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
