@@ -160,6 +160,12 @@ Last updated: 2026-11-27
   error 110200 until the deployment hostname is added to the Cloudflare widget. The
   securityheaders.com grade has to be taken on the public production URL (previews are protected).
 - Vercel Hobby plan is for non-commercial use only; upgrade to Pro before launch.
+- Razorpay UPI: the account currently has UPI (collect and QR) turned off; only UPI intent
+  (app buttons on phones) is on (checked via `/v1/methods`, 27 Nov 2026). Nothing in our code
+  restricts methods. Before launch, confirm in the dashboard (Account & Settings, Payment
+  methods) or with Razorpay support that UPI is enabled in live mode after KYC.
+- Razorpay webhook: previews are behind Vercel Authentication, so Razorpay cannot reach them.
+  Create the dashboard webhook on the public production URL at launch.
 - CSP: if browser code calls Supabase directly, set `NEXT_PUBLIC_SUPABASE_URL` so `connect-src`
   allows it. Sentry will need its ingest origin added.
 - Organizer console set-up (both Supabase projects): create the organizer user under
