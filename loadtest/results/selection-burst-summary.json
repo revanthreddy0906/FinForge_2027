@@ -1,0 +1,191 @@
+{
+  "metrics": {
+    "iteration_duration": {
+      "med": 2545.0787915,
+      "max": 2755.218125,
+      "p(90)": 2730.4527541,
+      "p(95)": 2744.5701264500003,
+      "avg": 2550.7454624624997,
+      "min": 2307.677666
+    },
+    "checks{step:double}": {
+      "passes": 10,
+      "fails": 0,
+      "thresholds": {
+        "rate==1": false
+      },
+      "value": 1
+    },
+    "http_req_duration": {
+      "max": 2562.108,
+      "p(90)": 2527.4593,
+      "p(95)": 2536.7959,
+      "avg": 2344.9463375000005,
+      "min": 2087.589,
+      "med": 2338.1855
+    },
+    "vus": {
+      "value": 80,
+      "min": 80,
+      "max": 80
+    },
+    "http_req_connecting": {
+      "avg": 84.23453749999999,
+      "min": 71.404,
+      "med": 85.19800000000001,
+      "max": 106.413,
+      "p(90)": 94.3021,
+      "p(95)": 95.07319999999996
+    },
+    "checks{step:burst}": {
+      "passes": 150,
+      "fails": 0,
+      "thresholds": {
+        "rate==1": false
+      },
+      "value": 1
+    },
+    "data_received": {
+      "count": 557597,
+      "rate": 202194.56254702696
+    },
+    "selection_already_submitted": {
+      "count": 5,
+      "rate": 1.8130886872331358
+    },
+    "checks": {
+      "passes": 160,
+      "fails": 0,
+      "value": 1
+    },
+    "http_req_duration{expected_response:true}": {
+      "med": 2338.1855,
+      "max": 2562.108,
+      "p(90)": 2527.4593,
+      "p(95)": 2536.7959,
+      "avg": 2344.9463375000005,
+      "min": 2087.589
+    },
+    "http_req_tls_handshaking": {
+      "max": 150.858,
+      "p(90)": 141.4242,
+      "p(95)": 144.4689,
+      "avg": 115.299425,
+      "min": 50.345,
+      "med": 116.57050000000001
+    },
+    "http_req_waiting": {
+      "max": 2556.281,
+      "p(90)": 2523.0976,
+      "p(95)": 2536.4689999999996,
+      "avg": 2343.94365,
+      "min": 2087.444,
+      "med": 2338.068
+    },
+    "selection_saved": {
+      "count": 75,
+      "rate": 27.19633030849704
+    },
+    "http_req_blocked": {
+      "avg": 205.20068750000004,
+      "min": 129.66,
+      "med": 207.826,
+      "max": 247.003,
+      "p(90)": 238.1129,
+      "p(95)": 242.09105
+    },
+    "http_req_sending": {
+      "med": 0.03,
+      "max": 0.194,
+      "p(90)": 0.06330000000000004,
+      "p(95)": 0.1362,
+      "avg": 0.0432375,
+      "min": 0.02
+    },
+    "data_sent": {
+      "count": 204960,
+      "rate": 74322.13146706071
+    },
+    "iterations": {
+      "count": 80,
+      "rate": 29.009418995730172
+    },
+    "http_reqs": {
+      "count": 80,
+      "rate": 29.009418995730172
+    },
+    "selection_submit_duration{step:burst}": {
+      "med": 2342.661,
+      "max": 2562.108,
+      "p(90)": 2529.5908,
+      "p(95)": 2537.3304,
+      "avg": 2349.375706666667,
+      "min": 2087.589,
+      "thresholds": {
+        "p(95)<3000": false
+      }
+    },
+    "selection_submit_duration": {
+      "max": 2562.108,
+      "p(90)": 2527.4593,
+      "p(95)": 2536.7959,
+      "avg": 2344.9463375000005,
+      "min": 2087.589,
+      "med": 2338.1855
+    },
+    "vus_max": {
+      "value": 80,
+      "min": 80,
+      "max": 80
+    },
+    "http_req_receiving": {
+      "avg": 0.9594499999999998,
+      "min": 0.022,
+      "med": 0.079,
+      "max": 14.531,
+      "p(90)": 4.200500000000001,
+      "p(95)": 5.809999999999998
+    },
+    "http_req_failed": {
+      "passes": 0,
+      "fails": 80,
+      "value": 0
+    }
+  },
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": {},
+    "checks": {
+      "burst submit is 200": {
+        "name": "burst submit is 200",
+        "path": "::burst submit is 200",
+        "id": "6eb5bf1ebd7d8f7f6b2304795acc0ab1",
+        "passes": 75,
+        "fails": 0
+      },
+      "burst team's choice is saved once": {
+        "name": "burst team's choice is saved once",
+        "path": "::burst team's choice is saved once",
+        "id": "62c0bb7ef9c6fd2bab48a8159dcbe001",
+        "passes": 75,
+        "fails": 0
+      },
+      "double tap is 200": {
+        "name": "double tap is 200",
+        "path": "::double tap is 200",
+        "id": "d44c4f5d493159785ac41d3a88d867c4",
+        "passes": 5,
+        "fails": 0
+      },
+      "double tap is saved or told it already submitted": {
+        "name": "double tap is saved or told it already submitted",
+        "path": "::double tap is saved or told it already submitted",
+        "id": "ed308449e814ec17de0c9bcce9582cc7",
+        "passes": 5,
+        "fails": 0
+      }
+    }
+  }
+}

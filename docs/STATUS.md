@@ -148,8 +148,8 @@ Last updated: 2026-11-27
   them, and one statement may take an extra team, handled by hand.
 - Problem statements: migrations applied to production on 27 Nov 2026 (advisors clean; window
   not open, results unpublished, 19 slots each).
-  Run the staging e2e flow (`e2e/statements-flow.spec.ts`, in CI) and a k6 burst of 75 submits
-  from one IP before event day. Make the QR code once the production domain is final.
+  Staging e2e flow passes in CI; k6 burst of 75 submits from one IP and 1,000 users on the results
+  page passed (see `docs/load-testing.md`). Make the QR code once the production domain is final.
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
 - Code Connect: blocked by the Figma plan (needs a Dev/Full seat on Organization). Mapping table is
   ready in `docs/design-system.md`.

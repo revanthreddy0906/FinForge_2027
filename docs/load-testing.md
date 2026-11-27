@@ -62,6 +62,24 @@ reason code.
 - Staging team references (`FF27-xxxx`) advanced by ~540. Restart the counter before launch (see
   `docs/STATUS.md`).
 
+## Problem statement selection (27 Nov 2026, 13:30 to 13:40 IST)
+
+Preview of `main` on the `loadtest/k6` branch, staging Supabase, k6 from one Mac (one IP, like
+the venue Wi-Fi). 75 paid test teams from `loadtest/selection-setup.sql`.
+
+| Test                   | What it did                                                                          | Result                                                                                                                                                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `selection-burst.js`   | 75 teams submit in the same second, random rankings, plus 5 double taps for one team | 80 requests, 0 failed. 75 entries saved, the 5 double taps got "already submitted". p95 2.5 s (submits wait in line for the lock)                                                                                                     |
+| Database check         | Entries, slots, first come first served                                              | 75 entries, no extra or missing team; 18/19/19/19 per statement (19 slots each); 69 got their 1st choice, 3 their 2nd, 3 their 3rd; every fallback happened only after the earlier choices were full; 75 distinct times within 0.46 s |
+| Publish                | Window closed and results published in the database                                  | Results page showed all 75 references about 7 s later (cache safety net, no `updateTag` because the change was made in SQL)                                                                                                           |
+| `selection-results.js` | 1,000 people refreshing the results page for 2 minutes                               | 33,555 requests, 0 failed, p95 364 ms                                                                                                                                                                                                 |
+
+Afterwards: `loadtest/selection-cleanup.sql` (0 rows left, window back to not open), the bypass
+secret revoked, the `loadtest/k6` branch deleted. Summaries: `loadtest/results/selection-*.json`.
+
+Note: the CI staging flow (`e2e/statements-flow.spec.ts`) also changes staging's selection state.
+Don't push while a selection load test is running.
+
 ## How the tests get past Turnstile, the rate limit and Vercel protection
 
 Nothing in production is weakened. Everything below is scoped to one preview branch.

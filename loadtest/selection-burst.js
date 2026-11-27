@@ -83,7 +83,8 @@ function submit(ref, step) {
 }
 
 export function burst() {
-  const ref = reference(exec.vu.idInTest - 1);
+  // 0..TEAMS-1 within this scenario (vu.idInTest also counts the double-tap VUs).
+  const ref = reference(exec.scenario.iterationInTest);
   const { res, result } = submit(ref, "burst");
   check(
     res,

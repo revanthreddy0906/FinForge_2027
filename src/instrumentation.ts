@@ -8,7 +8,13 @@ import * as Sentry from "@sentry/nextjs";
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { sharedSentryOptions } = await import("@/lib/monitoring/sentry-options");
-    Sentry.init(sharedSentryOptions);
+    Sentry.init({
+      ...sharedSentryOptions,
+      // Handled server failures (a payment that can't start, a database error) are logged with
+      // console.error and never thrown, so report those too. The log lines carry only error
+      // codes, and beforeSend strips anything else.
+      integrations: [Sentry.captureConsoleIntegration({ levels: ["error"] })],
+    });
   }
 }
 
