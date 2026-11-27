@@ -81,7 +81,6 @@ describe("selectionFormData", () => {
 function deps(outcome: SaveChoiceOutcome, overrides: Partial<SubmitDeps> = {}) {
   return {
     allowNetwork: vi.fn(() => Promise.resolve(true)),
-    allowReference: vi.fn((reference: string) => Promise.resolve(reference.length > 0)),
     saveChoice: vi.fn(() => Promise.resolve(outcome)),
     ...overrides,
   };
@@ -97,7 +96,6 @@ describe("submitSelection", () => {
       submittedAt: "2027-03-10T04:32:13.120Z",
     });
     expect(d.saveChoice).toHaveBeenCalledWith(valid);
-    expect(d.allowReference).toHaveBeenCalledWith("FF27-0080");
   });
 
   it("reports an existing entry with its original time", async () => {
@@ -131,15 +129,6 @@ describe("submitSelection", () => {
       { allowNetwork: () => Promise.resolve(false) },
     );
     expect(await submitSelection(valid, d)).toMatchObject({ message: submitCopy.networkLimited });
-    expect(d.saveChoice).not.toHaveBeenCalled();
-  });
-
-  it("stops at the per-reference limit", async () => {
-    const d = deps(
-      { ok: true, outcome: "submitted", submittedAt: "x" },
-      { allowReference: () => Promise.resolve(false) },
-    );
-    expect(await submitSelection(valid, d)).toMatchObject({ message: submitCopy.referenceLimited });
     expect(d.saveChoice).not.toHaveBeenCalled();
   });
 

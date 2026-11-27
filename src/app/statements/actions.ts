@@ -8,11 +8,11 @@ import { saveChoice } from "@/lib/server/statements";
 
 /**
  * Submits per minute from one IP. On event day every team may share the venue Wi-Fi's single
- * public IP, so this only stops floods; the per-reference limit below stops code guessing.
+ * public IP, so this only stops floods. There is deliberately no per-reference limit: references
+ * are guessable, so anyone could use one to lock a rival team out while slots fill up. Guessing
+ * a team code is not practical anyway (32^8, about 10^12 codes, at 300 tries a minute).
  */
 const NETWORK_LIMIT_PER_MINUTE = 300;
-/** Attempts per minute for one team reference, right or wrong. A real team needs one or two. */
-const REFERENCE_LIMIT_PER_MINUTE = 5;
 
 /** Server action behind the problem statement selection form. */
 export async function submitSelectionAction(
@@ -22,8 +22,6 @@ export async function submitSelectionAction(
   const ip = await clientIp();
   return submitSelection(selectionFormData(formData), {
     allowNetwork: () => allowRequest("statements-ip", ip, NETWORK_LIMIT_PER_MINUTE),
-    allowReference: (reference) =>
-      allowRequest("statements-ref", reference, REFERENCE_LIMIT_PER_MINUTE),
     saveChoice,
   });
 }

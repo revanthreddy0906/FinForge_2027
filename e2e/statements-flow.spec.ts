@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { createClient } from "@supabase/supabase-js";
 import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
@@ -100,6 +101,25 @@ async function signIn(page: Page) {
   await expect(page).toHaveURL(/\/admin$/);
 }
 
+/** Console errors and uncaught exceptions (CSP violations show up here). */
+function collectErrors(page: Page, into: string[]) {
+  page.on("console", (m) => {
+    if (m.type() === "error") into.push(`${page.url()}: ${m.text()}`);
+  });
+  page.on("pageerror", (e) => into.push(`${page.url()}: ${e.message}`));
+}
+
+async function expectAccessible(page: Page) {
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(axe.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+}
+
 async function confirmAndPress(page: Page, box: RegExp, button: string) {
   await page.getByLabel(box).check();
   await page.getByRole("button", { name: button }).click();
@@ -121,6 +141,8 @@ test("a team ranks the statements once; organizers close, assign, publish and un
 }) => {
   const [a, b] = teams;
   if (!a || !b) throw new Error("test teams missing");
+  const errors: string[] = [];
+  collectErrors(page, errors);
 
   await test.step("organizer opens selection", async () => {
     await signIn(page);
@@ -141,6 +163,7 @@ test("a team ranks the statements once; organizers close, assign, publish and un
       await expect(page.getByRole("status")).toContainText("Selection is open");
     }
     await expect(page.getByRole("button", { name: "Close selection" })).toBeVisible();
+    await expectAccessible(page);
   });
 
   const codeA = ((await codeOf(page, a.reference)) ?? "").trim();
@@ -148,10 +171,12 @@ test("a team ranks the statements once; organizers close, assign, publish and un
   expect(codeA).toMatch(/^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/);
 
   const team = await context.newPage();
+  collectErrors(team, errors);
   await test.step("a wrong code is refused without saying which part is wrong", async () => {
     await team.goto("/statements");
     await expect(team.getByText("Selection open")).toBeVisible();
     await expect(team.getByTestId("ranking").getByRole("listitem")).toHaveCount(4);
+    await expectAccessible(team);
     await team.getByLabel("Team reference").fill(a.reference.toLowerCase());
     await team.getByLabel("Team code").fill(codeB);
     await team.getByRole("button", { name: "Review our choices" }).click();
@@ -171,10 +196,12 @@ test("a team ranks the statements once; organizers close, assign, publish and un
     await expect(team.getByRole("heading", { name: "Check your choices" })).toBeFocused();
     await expect(team.getByTestId("review-order").getByRole("listitem").nth(0)).toContainText(last);
     await expect(team.getByText("can submit only once")).toBeVisible();
+    await expectAccessible(team);
     await team.getByRole("button", { name: "Submit our choices" }).click();
     await expect(team.getByRole("heading", { name: "Your team's choices are in." })).toBeFocused();
     await expect(team.getByTestId("done-reference")).toHaveText(a.reference);
     await expect(team.getByTestId("done-time")).toHaveText(/\d{2}:\d{2}:\d{2}/);
+    await expectAccessible(team);
   });
 
   await test.step("a second submit from the same team changes nothing", async () => {
@@ -225,4 +252,6 @@ test("a team ranks the statements once; organizers close, assign, publish and un
     await team.goto("/statements/results");
     await expect(team.getByRole("heading", { name: "Results aren't out yet" })).toBeVisible();
   });
+
+  expect(errors).toEqual([]);
 });

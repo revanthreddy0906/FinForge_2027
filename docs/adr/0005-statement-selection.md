@@ -40,10 +40,12 @@ a secret can't be sent by email.
 - **No database reads per page view.** The status and the published results come from
   `'use cache: remote'` functions with tags. Organizer actions expire the tags with `updateTag`,
   and a 15-second lifetime is the safety net. Submissions always check the database.
-- **Rate limits.** The venue Wi-Fi can put every team behind one public IP. The limits are 300
-  submits a minute per IP (floods only) and 5 tries a minute per team reference (stops guessing).
-  There is no Turnstile here: the team code already blocks bots, and a challenge shown to a whole
-  room on one IP would slow real teams down.
+- **Rate limits.** The venue Wi-Fi can put every team behind one public IP, so the only limit is
+  300 submits a minute per IP, which stops floods. There is no per-reference limit: references
+  are guessable, and such a limit would let anyone lock a rival team out while slots fill up.
+  Guessing a code (32^8, about 10^12) at 300 tries a minute is not practical. There is no
+  Turnstile either: the team code already blocks bots, and a challenge shown to a whole room on
+  one IP would slow real teams down.
 - **Statement texts stay off the client.** They live in the server-only
   `src/config/problem-statements.ts` and render only while the window is open.
 
@@ -51,6 +53,9 @@ a secret can't be sent by email.
 
 - Slots are provisional (19 each). Change them in `private.problem_statements` and in the config
   together.
+- Known risk: one person flooding from the venue Wi-Fi could hit the per-IP limit for everyone
+  there for up to a minute. The fallback is that organizers see exact submit times and can assign
+  by hand; turning on per-IP keys per device would need a separate design.
 - Teams need their check-in slip. A team that lost it gets its code again from the console.
 - If a cache expiry is missed, the public pages can lag by up to about 15 seconds. Submissions are
   never affected.

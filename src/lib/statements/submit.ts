@@ -25,8 +25,6 @@ export type SaveChoiceOutcome =
 export interface SubmitDeps {
   /** true when this network may submit now (a loose limit: a whole venue can share one IP). */
   allowNetwork: () => Promise<boolean>;
-  /** true when this team reference may be tried now (stops code guessing). */
-  allowReference: (reference: string) => Promise<boolean>;
   saveChoice: (input: SelectionInput) => Promise<SaveChoiceOutcome>;
 }
 
@@ -34,8 +32,6 @@ export const submitCopy = {
   invalid: "Some details need fixing. Check the highlighted fields.",
   networkLimited:
     "Too many attempts from this network right now. Wait a minute, then submit again. Your order is still here.",
-  referenceLimited:
-    "Too many attempts for this team reference. Wait a minute, then check the reference and team code and try again.",
   notOpen: "Problem statement selection hasn't opened yet. Wait for the organizers' announcement.",
   closed:
     "Problem statement selection has closed. If your team didn't submit, speak to the organizers' desk.",
@@ -61,7 +57,6 @@ export async function submitSelection(raw: unknown, deps: SubmitDeps): Promise<S
     const data = parsed.data;
 
     if (!(await deps.allowNetwork())) return error(submitCopy.networkLimited);
-    if (!(await deps.allowReference(data.reference))) return error(submitCopy.referenceLimited);
 
     const saved = await deps.saveChoice(data);
     if (saved.ok) {
