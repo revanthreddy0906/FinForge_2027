@@ -4,6 +4,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Wait a week before adopting a new release: most malicious or broken versions are pulled by then.
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 5
     groups:
       minor-and-patch:
@@ -20,3 +23,6 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Wait a week before adopting a new release: most malicious or broken versions are pulled by then.
+    cooldown:
+      default-days: 7

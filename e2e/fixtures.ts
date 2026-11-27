@@ -63,6 +63,7 @@ export const test = base.extend({
       route.fulfill({ contentType: "text/javascript", body: fakeCheckout }),
     );
     await page.route("https://api.razorpay.com/e2e/pay", async (route) => {
+      // nosemgrep: typescript.react.security.react-insecure-request.react-insecure-request -- local test stub on 127.0.0.1, never a real network
       const res = await fetch(`${RAZORPAY_STUB}/test/pay`, {
         method: "POST",
         headers: { "content-type": "application/json" },

@@ -9,8 +9,12 @@ const [base = "", desktop = ""] = css.split("@media (width >= 48rem)");
 /** Value of `--name` in a CSS chunk, or undefined. */
 function cssVar(chunk: string, name: string): string | undefined {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  // eslint-disable-next-line security/detect-non-literal-regexp -- name comes from the typed token table, escaped above
-  return new RegExp(`--${escaped}:\\s*([^;]+);`).exec(chunk)?.[1]?.trim();
+  // The name comes from the typed token table and is escaped above, so the pattern is safe.
+  /* eslint-disable security/detect-non-literal-regexp */
+  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
+  const pattern = new RegExp(`--${escaped}:\\s*([^;]+);`);
+  /* eslint-enable security/detect-non-literal-regexp */
+  return pattern.exec(chunk)?.[1]?.trim();
 }
 const rem = (px: number) => (px === 0 ? "0" : `${String(px / 16)}rem`);
 

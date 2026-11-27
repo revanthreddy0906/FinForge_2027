@@ -147,6 +147,7 @@ describe("codeStep", () => {
       step: "enroll" as const,
       factorId: FACTOR,
       qrCode: "",
+      // nosemgrep: generic.secrets.security.detected-generic-secret.detected-generic-secret -- the well-known public base32 example, not a real TOTP secret
       secret: "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
     };
     expect(await codeStep({ factorId: FACTOR, code: "123456" }, enroll, "ip", d)).toEqual({

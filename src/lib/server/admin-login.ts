@@ -14,7 +14,7 @@ const ISSUER = "FinForge 2027";
 function logError(where: string, error: unknown) {
   // Only the error code and status: never emails, passwords or tokens.
   const e = error as { code?: unknown; status?: unknown; name?: unknown } | null;
-  console.error(`[admin] ${where} failed`, { name: e?.name, code: e?.code, status: e?.status });
+  console.error("[admin] %s failed", where, { name: e?.name, code: e?.code, status: e?.status });
 }
 
 async function signInWithPassword(email: string, password: string): Promise<PasswordOutcome> {

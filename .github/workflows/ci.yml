@@ -34,7 +34,21 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run build
-      # Added in later build steps: Lighthouse CI, Semgrep.
+      # Added in a later build step: Lighthouse CI.
+
+  semgrep:
+    name: Semgrep code scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      # semgrep 1.186.0, pinned by digest
+      image: semgrep/semgrep@sha256:6e1b04340e60e910fbb4ddbf3c857ab0918f064417ad5ac530014ccb3cf8c8f1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Fails on any finding. False positives get an inline `nosemgrep` comment with the reason.
+      - run: semgrep scan --config auto --error --metrics=on
 
   e2e:
     name: Playwright e2e
