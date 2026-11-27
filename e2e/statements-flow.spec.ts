@@ -138,6 +138,8 @@ test("a team ranks the statements once; organizers close, assign, publish and un
     await signIn(page);
     await page.getByRole("link", { name: "Problem statements" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Problem statements" })).toBeVisible();
+    // The panel streams in after the page shell; wait for it before checking which buttons show.
+    await expect(page.getByRole("heading", { name: "Selection window" })).toBeVisible();
     if (await page.getByRole("button", { name: "Unpublish results" }).isVisible()) {
       await page.getByRole("button", { name: "Unpublish results" }).click();
       await expect(page.getByRole("status")).toContainText("hidden");
