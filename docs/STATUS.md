@@ -141,6 +141,23 @@ Last updated: 2026-11-27
   - Staging: migrations applied, advisors clean, `supabase/tests/selection_rules.sql` 52/52;
     Vitest (schema, flow, CSV) pass; Playwright no-database checks 50/50 (desktop + 360px, axe 0)
 
+- **Production readiness** (27 Nov 2026)
+  - Error alerts: Sentry project `finforge-2027` (see `docs/deployment.md`), production only,
+    errors only, personal data stripped. Thrown errors and handled server failures
+    (`console.error`) both alert by email; test alert confirmed received
+  - Production checks on a production build behind Vercel Authentication, with Razorpay test keys
+    and "ZZ TEST" teams: registration, test netbanking payment (paid), failed payment (stays
+    pending), 30-minute name hold, admin sign-in with TOTP, teams table and CSV, problem statement
+    submit (unpaid team refused), close, publish and results. Pages at desktop and 360px: all
+    security headers, one h1, no overflow, admin noindex. k6, 300 visitors: p95 178 ms, 0% errors.
+    Test rows deleted, team counter restarted, selection back to not open
+  - Bugs found and fixed: `/admin` logged "Date.now() while prerendering" on every visit
+    (prefetch prerender; fixed with `connection()`); the registration form could fall back to a
+    GET with personal data in the URL if submitted before hydration (now `method="post"`)
+  - Security scans: npm audit 0 high/critical; gitleaks 0 across the full history; Semgrep
+    `--config auto` 0 findings (now in CI); Supabase advisors: only leaked-password protection
+    (both projects); OWASP ZAP baseline on staging: 0 high, see Known issues for the mediums
+
 ## Pending
 
 - Problem statements: texts and slot limits are TODO (provisional 19 each, in
@@ -153,7 +170,13 @@ Last updated: 2026-11-27
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
 - Code Connect: blocked by the Figma plan (needs a Dev/Full seat on Organization). Mapping table is
   ready in `docs/design-system.md`.
-- Add Playwright and Lighthouse CI to the pipeline
+- Add Lighthouse CI to the pipeline
+- Before launch (production): delete `NEXT_PUBLIC_REGISTRATION_STATE` (set to `coming-soon` now),
+  put the live Razorpay keys and live webhook secret in Production, remove
+  `finforge2027-prodtest.vercel.app` from `TURNSTILE_HOSTNAMES` and the Turnstile widget, set
+  Vercel Authentication back to "all except custom domains" once `finforge.co.in` is attached,
+  remove the Ignored Build Step, add Sentry uptime monitors, take the securityheaders.com grade.
+  Regenerate the Razorpay test key (it was shared in chat)
 
 ## Verification (26 Nov 2026, production build, local)
 
@@ -164,9 +187,16 @@ Last updated: 2026-11-27
   errors, all revealed content ends fully visible, axe-core WCAG 2.1 AA: 0 violations, keyboard
   order correct with visible focus, mobile menu traps focus and closes on Escape, organiser email
   absent from the HTML.
-- CI steps still to add as their features land: Playwright, Lighthouse CI, Semgrep, ZAP baseline
+- CI steps still to add: Lighthouse CI, ZAP baseline (run by hand on staging for now)
 
 ## Known issues and notes
+
+- ZAP baseline (staging, 27 Nov 2026), mediums and lows left as they are: `/sitemap.xml` 404 has no
+  CSP (the sitemap comes with the SEO step); `Access-Control-Allow-Origin: *` on immutable static
+  files (Vercel CDN default, public assets only); Vercel's own `/_vercel/*` analytics scripts lack
+  nosniff and Permissions-Policy; no COEP/CORP (would break Turnstile and Razorpay frames).
+- Vercel Authentication "all except custom domains" leaves the production `*.vercel.app` address
+  public. It is set to "all" until launch.
 
 - Payments: the Razorpay webhook isn't created in the dashboard yet (Revanth). Previews are behind
   Vercel Authentication, so a staging webhook URL needs the protection bypass query parameter.
