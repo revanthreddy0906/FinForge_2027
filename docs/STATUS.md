@@ -93,7 +93,8 @@ Last updated: 2026-11-27
   - Project `finforge-2027` linked to the GitHub repo; Node 24.x, functions in `bom1` (Mumbai)
   - Previews (every non-`main` branch) use the staging Supabase project and are behind Vercel
     Authentication; production env vars point at `FinForge_2027`
-  - Production builds paused with an Ignored Build Step until launch is approved
+  - Production builds automatic since 27 Nov 2026 (every push to `main` deploys); the site
+    stays private behind Vercel Authentication until launch
   - Public env vars set; secrets (Supabase secret key, Turnstile secret, Upstash token) are added
     by hand in the dashboard
   - Preview checked: all security headers present, Turnstile script loads under the CSP
@@ -204,7 +205,7 @@ Last updated: 2026-11-27
   put the live Razorpay keys and live webhook secret in Production, remove
   `finforge2027-prodtest.vercel.app` from `TURNSTILE_HOSTNAMES` and the Turnstile widget, set
   Vercel Authentication back to "all except custom domains" once `finforge.co.in` is attached,
-  remove the Ignored Build Step, add Sentry uptime monitors, take the securityheaders.com grade.
+  add Sentry uptime monitors, take the securityheaders.com grade.
   Regenerate the Razorpay test key (it was shared in chat)
 
 ## Verification (26 Nov 2026, production build, local)

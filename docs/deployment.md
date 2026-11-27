@@ -9,15 +9,14 @@
   hostname list.
 - Every push to a branch other than `main` builds a **preview** (staging). Previews are behind
   Vercel Authentication (Standard Protection), so only signed-in team members can open them.
-- `main` is the production branch. **Production builds are paused** with an Ignored Build Step
-  (Project Settings > Git > Ignored Build Step):
+- `main` is the production branch, and every push to it builds production. On 27 Nov 2026 the
+  Ignored Build Step was set back to "Automatic". Production is still private: Vercel
+  Authentication covers every deployment ("all") until launch. To pause production builds again,
+  set Project Settings > Build and Deployment > Ignored Build Step to Custom with:
 
   ```sh
   if [ "$VERCEL_ENV" = "production" ]; then echo 'Production builds paused until launch is approved'; exit 0; else exit 1; fi
   ```
-
-  Remove it (set it back to "Automatic") only after `engineering:deploy-checklist` passes and the
-  launch is approved.
 
 - Vercel Toolbar is off for previews and production: it injects `vercel.live` scripts, frames and
   inline styles that our CSP (rightly) blocks.
