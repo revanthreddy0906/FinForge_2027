@@ -33,6 +33,10 @@ Last updated: 2026-11-27
   - UI components in `src/components/ui`, sections in `src/components/home`, motion in
     `src/components/motion` (Motion 14 + CSS keyframes and a CSS scroll-driven timeline rail)
   - Skip link, 404 and error pages; contact email only revealed on click
+- **Event content from the official FinForge 2027 document** (27 Nov 2026): dates 20–21 March
+  2027 (`startDate`/`endDate` set, ready for JSON-LD in the SEO step), two-day festival with a
+  24-hour hackathon, 75 teams, 25 colleges, prize extras, "Why FinForge", theme copy with the
+  problem-in-numbers stats and sources, the four "Come prepared" areas, judging criteria, FAQ
 
 - **Step 5, Supabase schema** (ADR `docs/adr/0001-registration-database.md`)
   - Tables `teams`, `team_members`, `contact_messages`, view `admin_registrations`; private
@@ -167,7 +171,13 @@ Last updated: 2026-11-27
   not open, results unpublished, 19 slots each).
   Staging e2e flow passes in CI; k6 burst of 75 submits from one IP and 1,000 users on the results
   page passed (see `docs/load-testing.md`). Make the QR code once the production domain is final.
-- Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
+- Content TODOs: registration window, results date, tracks and problem statements (the document
+  says they are revealed minutes before the timer starts), prize breakdown, sponsors, About
+  CBIT FinFoundry and club vision (empty in the document), official logo SVG
+- Open questions from the event document (27 Nov 2026), for Revanth: public contact email
+  (document: the club Gmail; site still reveals the organizer email), whether to set the database
+  team cap `max_teams` to 75 (currently no cap), and the 450–500 participants claim (75 teams of
+  up to 5 is at most 375; not shown on the site)
 - Code Connect: blocked by the Figma plan (needs a Dev/Full seat on Organization). Mapping table is
   ready in `docs/design-system.md`.
 - Add Lighthouse CI to the pipeline
