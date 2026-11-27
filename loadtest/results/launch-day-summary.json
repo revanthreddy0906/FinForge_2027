@@ -1,0 +1,239 @@
+{
+  "metrics": {
+    "iteration_duration": {
+      "avg": 11425.122256140263,
+      "min": 5755.46425,
+      "med": 11425.989917,
+      "max": 22003.671875,
+      "p(90)": 14189.806417,
+      "p(95)": 14885.122459
+    },
+    "http_req_blocked": {
+      "p(95)": 0.001,
+      "avg": 0.7702032112046152,
+      "min": 0,
+      "med": 0.001,
+      "max": 128.627,
+      "p(90)": 0.001
+    },
+    "http_req_duration{expected_response:true}": {
+      "avg": 139.49867118392152,
+      "min": 20.393,
+      "med": 166.956,
+      "max": 1328.045,
+      "p(90)": 284.6492,
+      "p(95)": 294.4106
+    },
+    "http_req_tls_handshaking": {
+      "med": 0,
+      "max": 102.659,
+      "p(90)": 0,
+      "p(95)": 0,
+      "avg": 0.6198754516166908,
+      "min": 0
+    },
+    "http_req_duration": {
+      "p(95)": 294.4106,
+      "avg": 139.49867118392152,
+      "min": 20.393,
+      "med": 166.956,
+      "max": 1328.045,
+      "p(90)": 284.6492
+    },
+    "checks{step:submit}": {
+      "passes": 450,
+      "fails": 0,
+      "thresholds": {
+        "rate>0.99": false
+      },
+      "value": 1
+    },
+    "register_outcomes": {
+      "count": 150,
+      "rate": 0.4413658463934395
+    },
+    "checks": {
+      "passes": 102570,
+      "fails": 0,
+      "value": 1
+    },
+    "http_req_connecting": {
+      "min": 0,
+      "med": 0,
+      "max": 37.067,
+      "p(90)": 0,
+      "p(95)": 0,
+      "avg": 0.14764577599812187
+    },
+    "register_submit_duration": {
+      "p(90)": 502.1163,
+      "p(95)": 591.1140499999998,
+      "avg": 399.02537333333345,
+      "min": 200.881,
+      "med": 380.8325,
+      "max": 1328.045,
+      "thresholds": {
+        "p(95)<2000": false
+      }
+    },
+    "data_sent": {
+      "count": 9701973,
+      "rate": 28547.463498875317
+    },
+    "http_req_failed": {
+      "passes": 0,
+      "fails": 76669,
+      "thresholds": {
+        "rate<0.01": false
+      },
+      "value": 0
+    },
+    "http_req_duration{page:home}": {
+      "max": 576.028,
+      "p(90)": 293.518,
+      "p(95)": 300.109,
+      "avg": 197.14086731366118,
+      "min": 53.013,
+      "med": 192.15,
+      "thresholds": {
+        "p(95)<500": false
+      }
+    },
+    "http_req_receiving": {
+      "avg": 75.36740982665661,
+      "min": 0.012,
+      "med": 94.168,
+      "max": 491.37,
+      "p(90)": 141.45520000000002,
+      "p(95)": 146.4582
+    },
+    "http_reqs": {
+      "count": 76669,
+      "rate": 225.59385384759074
+    },
+    "iterations": {
+      "count": 25461,
+      "rate": 74.91743876682241
+    },
+    "http_req_sending": {
+      "p(95)": 0.158,
+      "avg": 0.08148353310986269,
+      "min": 0.008,
+      "med": 0.075,
+      "max": 20.495,
+      "p(90)": 0.121
+    },
+    "data_received": {
+      "count": 771634918,
+      "rate": 2270488.657932015
+    },
+    "register_orders_created": {
+      "rate": 0.4413658463934395,
+      "count": 150
+    },
+    "http_req_waiting": {
+      "avg": 64.04977782415351,
+      "min": 18.715,
+      "med": 51.863,
+      "max": 1327.598,
+      "p(90)": 154.952,
+      "p(95)": 158.12959999999998
+    },
+    "vus": {
+      "value": 7,
+      "min": 7,
+      "max": 1050
+    },
+    "http_req_duration{page:static}": {
+      "avg": 26.436479195316323,
+      "min": 20.393,
+      "med": 25.56,
+      "max": 906.462,
+      "p(90)": 30.356,
+      "p(95)": 32.7605,
+      "thresholds": {
+        "p(95)<500": false
+      }
+    },
+    "http_req_duration{page:register}": {
+      "avg": 192.98352728408946,
+      "min": 50.246,
+      "med": 188.277,
+      "max": 688.069,
+      "p(90)": 289.325,
+      "p(95)": 294.93,
+      "thresholds": {
+        "p(95)<500": false
+      }
+    },
+    "vus_max": {
+      "value": 1050,
+      "min": 1050,
+      "max": 1050
+    }
+  },
+  "root_group": {
+    "groups": {},
+    "checks": {
+      "home is 200": {
+        "id": "f35678a557897e39f1b585f1420a4ae9",
+        "passes": 25451,
+        "fails": 0,
+        "name": "home is 200",
+        "path": "::home is 200"
+      },
+      "home is the real page": {
+        "name": "home is the real page",
+        "path": "::home is the real page",
+        "id": "57f69e587d2cd6b9394a1ad207b17d18",
+        "passes": 25451,
+        "fails": 0
+      },
+      "register is 200": {
+        "name": "register is 200",
+        "path": "::register is 200",
+        "id": "960bbaa0ba843e56a9a5a6159bf97b11",
+        "passes": 25601,
+        "fails": 0
+      },
+      "register is the real page": {
+        "name": "register is the real page",
+        "path": "::register is the real page",
+        "id": "e5acca55ef4509231e552e2d6a73d133",
+        "passes": 25601,
+        "fails": 0
+      },
+      "submit is 200": {
+        "passes": 150,
+        "fails": 0,
+        "name": "submit is 200",
+        "path": "::submit is 200",
+        "id": "2c35c65d748727cf80d81d923812f9b7"
+      },
+      "submit reaches payment with a Razorpay order": {
+        "id": "dadbe87f61d1657dae0a566f8d5b4e1c",
+        "passes": 150,
+        "fails": 0,
+        "name": "submit reaches payment with a Razorpay order",
+        "path": "::submit reaches payment with a Razorpay order"
+      },
+      "fee is 699 per member": {
+        "name": "fee is 699 per member",
+        "path": "::fee is 699 per member",
+        "id": "8d522bf3a1c46b5f7db8276a1edc48ec",
+        "passes": 150,
+        "fails": 0
+      },
+      "retry returns the same order": {
+        "name": "retry returns the same order",
+        "path": "::retry returns the same order",
+        "id": "a376a277faf7f29e2f8f8e9dcb02f1c3",
+        "passes": 16,
+        "fails": 0
+      }
+    },
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e"
+  }
+}

@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { retryOnThrottle } from "@/lib/payments/retry";
 import { orderId, paymentEntitySchema, type PaymentEntity } from "@/lib/payments/schema";
 import { razorpayEnv } from "./razorpay-env";
 
@@ -33,16 +34,20 @@ async function call(
     cache: "no-store",
   });
   if (!res.ok) {
-    // Log the status and Razorpay's error code only; never the request (it holds personal data).
-    const code = await res
+    // Log the HTTP status and Razorpay's error code and reason (short machine codes) only; never
+    // the request or the description (they can hold personal data).
+    const error = await res
       .json()
       .then(
         (b: unknown) =>
-          z.object({ error: z.object({ code: z.string() }) }).safeParse(b).data?.error.code,
+          z
+            .object({ error: z.object({ code: z.string(), reason: z.string().nullish() }) })
+            .safeParse(b).data?.error,
       )
       .catch(() => undefined);
+    const reason = error?.reason ? ` (${error.reason.slice(0, 60)})` : "";
     throw new RazorpayError(
-      `Razorpay ${init.method} ${path.split("/")[2] ?? ""} failed: ${code ?? "unknown"}`,
+      `Razorpay ${init.method} ${path.split("/")[2] ?? ""} failed: HTTP ${String(res.status)} ${error?.code ?? "unknown"}${reason}`,
       res.status,
     );
   }
@@ -61,15 +66,21 @@ export async function createOrder(input: {
   receipt: string;
   notes: Record<string, string>;
 }): Promise<z.infer<typeof orderSchema>> {
-  const body = await call("/v1/orders", {
-    method: "POST",
-    body: {
-      amount: input.amountPaise,
-      currency: "INR",
-      receipt: input.receipt,
-      notes: input.notes,
-    },
-  });
+  // Razorpay throttles bursts of order creation (HTTP 429). A throttled request creates nothing,
+  // so it is retried a few times before the user sees "couldn't start the payment".
+  const body = await retryOnThrottle(
+    () =>
+      call("/v1/orders", {
+        method: "POST",
+        body: {
+          amount: input.amountPaise,
+          currency: "INR",
+          receipt: input.receipt,
+          notes: input.notes,
+        },
+      }),
+    { isThrottle: (e) => e instanceof RazorpayError && e.status === 429 },
+  );
   const order = orderSchema.parse(body);
   if (order.amount !== input.amountPaise) throw new RazorpayError("order amount differs", 502);
   return order;
