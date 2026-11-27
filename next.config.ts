@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 import { securityHeaders } from "./src/lib/security/headers";
 
@@ -37,4 +38,26 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Sentry (errors only). Source maps upload only when SENTRY_AUTH_TOKEN is set (Vercel production
+// builds) and are deleted from the build afterwards, so they are never served publicly.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+  telemetry: false,
+  // No tracing, so router transitions aren't recorded (see src/instrumentation-client.ts).
+  suppressOnRouterTransitionStartWarning: true,
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+    deleteSourcemapsAfterUpload: true,
+  },
+  // Leave out the SDK code for features we don't use, to keep the browser bundle small.
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+    excludeTracing: true,
+    excludeReplayIframe: true,
+    excludeReplayShadowDom: true,
+    excludeReplayWorker: true,
+  },
+});

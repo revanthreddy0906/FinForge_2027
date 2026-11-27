@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { sentryEnabled, sentryIngestOrigin } from "@/lib/monitoring/sentry-options";
 import { buildCsp, createNonce } from "@/lib/security/headers";
 
 /**
@@ -21,6 +22,8 @@ export function proxy(request: NextRequest) {
     upgradeInsecureRequests: request.nextUrl.protocol === "https:",
     connectOrigins: supabaseUrl ? [new URL(supabaseUrl).origin] : [],
     razorpay: isRegisterPage(request.nextUrl.pathname),
+    // Browser errors go straight to Sentry, only where Sentry is switched on.
+    reportOrigin: sentryEnabled() ? sentryIngestOrigin() : null,
   });
 
   const requestHeaders = new Headers(request.headers);

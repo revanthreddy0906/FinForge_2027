@@ -22,6 +22,7 @@
     "test:e2e": "playwright test --trace off"
   },
   "dependencies": {
+    "@sentry/nextjs": "11.19.0",
     "@supabase/supabase-js": "2.119.2",
     "@upstash/ratelimit": "2.2.3",
     "@upstash/redis": "1.41.1",

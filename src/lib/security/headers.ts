@@ -41,6 +41,8 @@ export interface CspOptions {
   connectOrigins?: readonly string[];
   /** Allow Razorpay Checkout (the /register page only). */
   razorpay?: boolean;
+  /** Error reporting endpoint (the Sentry ingest origin). https:// only, no socket twin. */
+  reportOrigin?: string | null;
 }
 
 /** A nonce must be unguessable and new per request: 128 random bits, base64 encoded. */
@@ -61,6 +63,7 @@ export function buildCsp({
   upgradeInsecureRequests,
   connectOrigins = [],
   razorpay = false,
+  reportOrigin = null,
 }: CspOptions): string {
   const https = connectOrigins.filter((o) => o.startsWith("https://"));
   const directives: [string, ...string[]][] = [
@@ -95,6 +98,7 @@ export function buildCsp({
       ...https,
       ...https.map(socketOrigin),
       ...(razorpay ? RAZORPAY_CONNECT_ORIGINS : []),
+      ...(reportOrigin?.startsWith("https://") ? [reportOrigin] : []),
     ],
     ["frame-src", TURNSTILE_ORIGIN, ...(razorpay ? RAZORPAY_FRAME_ORIGINS : [])],
     ["worker-src", "'self'", "blob:"],

@@ -66,6 +66,27 @@ deployments built after it, so redeploy afterwards.
 
 `NEXT_PUBLIC_*` values are inlined at build time.
 
+## Error alerts (Sentry)
+
+- Sentry project `finforge-2027` in the org `revanth-9h` (`@sentry/nextjs`, errors only: no
+  tracing, replays, feedback widget or session pings).
+- Runs only when the Vercel environment is `production`, so previews, e2e runs, load tests and
+  scans never send events. `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG` and `SENTRY_PROJECT` are set
+  for Production only.
+- Server errors (pages, server actions, the payment routes) are reported through
+  `src/instrumentation.ts`. The browser SDK (about 50 KB gzipped) loads only after the page has
+  loaded and the main thread is idle; the first-load JS grows by about 1 KB.
+- Personal data is stripped in `beforeSend` (`src/lib/monitoring/scrub.ts`, with tests): no
+  cookies, headers, form bodies, query strings or user fields; emails, phone numbers and tokens
+  in messages are masked.
+- The CSP allows the ingest origin in `connect-src` only where Sentry is on.
+- Alert rules (email to the `revanth` team): "Errors: new, regressed or back" (at most every
+  5 minutes per issue) and "Error spike: 20 events in 5 minutes". Install the Sentry app on your
+  phone and turn on push notifications to get them there too.
+- Source maps: uploaded only when `SENTRY_AUTH_TOKEN` (Sensitive, Production) is set, and deleted
+  from the build after upload.
+- Uptime monitors on `/`, `/register` and `/statements` are added once production is public.
+
 ## Checks on the preview
 
 - Headers (checked 26 Nov 2026 on a preview): CSP with nonce + `'strict-dynamic'`, HSTS,

@@ -79,6 +79,20 @@ describe("buildCsp", () => {
   });
 });
 
+describe("buildCsp error reporting", () => {
+  it("allows the Sentry ingest origin for fetch only, without a socket twin", () => {
+    const csp = parse(buildCsp({ ...base, reportOrigin: "https://o1.ingest.us.sentry.io" }));
+    expect(csp.get("connect-src")).toEqual(["'self'", "https://o1.ingest.us.sentry.io"]);
+  });
+
+  it("ignores a missing or non-https reporting origin", () => {
+    expect(parse(buildCsp({ ...base, reportOrigin: null })).get("connect-src")).toEqual(["'self'"]);
+    expect(
+      parse(buildCsp({ ...base, reportOrigin: "http://o1.ingest.sentry.io" })).get("connect-src"),
+    ).toEqual(["'self'"]);
+  });
+});
+
 describe("buildCsp with Razorpay", () => {
   it("leaves Razorpay out unless asked", () => {
     expect(buildCsp(base)).not.toContain("razorpay");
