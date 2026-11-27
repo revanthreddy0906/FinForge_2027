@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { adminEnv } from "./admin-env";
 
@@ -117,6 +118,9 @@ export type AdminSession =
 
 /** Reads and verifies the organizer session from the cookies. */
 export async function readAdminSession(): Promise<AdminSession> {
+  // Token checks read the clock, so this must never run while Next.js prerenders a prefetch
+  // (cacheComponents + partialPrefetching): render it only for real requests.
+  await connection();
   const jar = await cookies();
   const access = jar.get(ACCESS_COOKIE)?.value;
   if (!access) return { state: "signed-out" };
