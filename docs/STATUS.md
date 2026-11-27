@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 2026-11-27
+Last updated: 2026-11-28
 
 ## Done
 
@@ -175,6 +175,18 @@ Last updated: 2026-11-27
     - with DNT on, no requests were sent.
   - Lighthouse (mobile, local): performance 99 on `/` and `/register`, CLS 0.
   - `/register/` still redirects to `/register` (now done in `src/proxy.ts`).
+
+- **Responsive pass for tablets** (28 Nov 2026)
+  - Tablets (768–1023px) were getting the full desktop type scale and two-column layouts, which
+    clipped the hero wordmark and cut off the prize amount on iPads. The type scale and spacing now
+    grow from mobile at `md` to desktop at `xl`, and side-by-side layouts start at `lg`
+    (see "Breakpoints" in `docs/design-system.md`). The `/register` doodles spread out on tablets.
+  - Also fixed ₹3,00,000 being cut off in the About stats on 320–390px phones.
+  - Checked with Playwright (Chrome, iPad user agent and touch) on `/`, `/register`,
+    `/statements`, `/statements/results`, `/admin/login` and the 404 page at 320, 360, 390, 414,
+    768, 820, 834, 1024 (both orientations), 1180×820, 1280, 1440 and 1920: no clipped text or
+    horizontal overflow, in both the "coming soon" and "open" registration states. Not yet
+    checked in real WebKit/Safari (no WebKit browser installed on this Mac).
 
 ## Pending
 
