@@ -33,6 +33,7 @@ export function Footer() {
             </div>
             <div className="flex flex-col gap-sm">
               <p className="text-eyebrow text-text-muted uppercase">Connect</p>
+              <ContactPhones />
               <ul className="flex flex-col gap-xs">
                 <li>
                   <a
@@ -45,7 +46,6 @@ export function Footer() {
                   </a>
                 </li>
               </ul>
-              <ContactPhones />
             </div>
           </nav>
         </div>

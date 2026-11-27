@@ -87,8 +87,18 @@ export const event = {
 
   /** Organizer contacts from the event document, in the order they should appear. */
   contacts: [
-    { name: "Pranathi Vemuri", phone: "+919866649095", phoneLabel: "98666 49095" },
-    { name: "Revanth Reddy", phone: "+919866403464", phoneLabel: "98664 03464" },
+    {
+      name: "Pranathi Vemuri",
+      role: "Organiser",
+      phone: "+919866649095",
+      phoneLabel: "+91 98666 49095",
+    },
+    {
+      name: "Revanth Reddy",
+      role: "Organiser",
+      phone: "+919866403464",
+      phoneLabel: "+91 98664 03464",
+    },
   ],
 
   instagram: { handle: "cbit_finfoundry", url: "https://www.instagram.com/cbit_finfoundry/" },

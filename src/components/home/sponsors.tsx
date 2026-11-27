@@ -1,6 +1,5 @@
 import { event } from "@/config/event";
-import { ContactEmail } from "../contact-email";
-import { ContactPhones } from "../contact-phones";
+import { ContactCards } from "../contact-phones";
 import { SectionHeader } from "../ui/section-header";
 import { Section } from "./section";
 
@@ -40,10 +39,7 @@ export function Sponsors() {
               </li>
             ))}
       </ul>
-      <div className="flex flex-col gap-lg md:flex-row md:items-center md:gap-2xl" data-reveal>
-        <ContactEmail />
-        <ContactPhones />
-      </div>
+      <ContactCards />
     </Section>
   );
 }
