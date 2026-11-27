@@ -27,7 +27,7 @@ export async function Timeline() {
   const date = await today();
   return (
     <Section id="timeline" labelledBy="timeline-title">
-      <div className="grid gap-2xl md:grid-cols-[1fr_1.2fr] md:gap-3xl">
+      <div className="grid gap-2xl lg:grid-cols-[1fr_1.2fr] lg:gap-3xl">
         <SectionHeader
           id="timeline-title"
           index="03"

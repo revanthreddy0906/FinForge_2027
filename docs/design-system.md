@@ -31,8 +31,23 @@ reveals, expo ease-out, no bounce. One dark theme, done well.
 
 The Figma Starter plan allows one mode per collection, so mobile values are separate variables with a
 `-mobile` suffix (e.g. `type/heading-1/size-mobile`, `spacing/gutter-mobile`) and text styles come
-in `Desktop/*` and `Mobile/*` pairs. Both point at the same CSS variable, which is mobile-first and
-switches at `md` (48rem). Reduced-motion values are handled in CSS (`prefers-reduced-motion`): travel
+in `Desktop/*` and `Mobile/*` pairs. Both point at the same CSS variable, which is mobile-first: it
+stays mobile below `md` (48rem). From `md` the type scale, gutter and section spacing grow linearly
+(`clamp()` driven by `--fluid`) and reach the desktop values at `xl` (80rem), so tablets get sizes in
+between instead of the full desktop scale.
+
+Layout breakpoints, used the same way in every section:
+
+| Width                | Devices                       | Layout                                                                    |
+| -------------------- | ----------------------------- | ------------------------------------------------------------------------- |
+| below `md` (< 768px) | phones                        | one column, mobile menu                                                   |
+| `md` (768–1023px)    | iPad portrait                 | still one column for hero and text/side pairs; card grids go to 2 columns |
+| `lg` (1024–1279px)   | iPad landscape, small laptops | side-by-side hero, section pairs, prize box and the desktop nav           |
+| `xl` (1280px+)       | desktops                      | full desktop sizes, 4-column stats, full seal                             |
+
+Side-by-side layouts start at `lg`, never `md`: at 768–1023px a two-column layout leaves each
+column too narrow for display type (the hero used to clip "FinForge" to "Fir" on an iPad).
+Reduced-motion values are handled in CSS (`prefers-reduced-motion`): travel
 distance 0, durations capped at 200ms, no stagger.
 
 ## Contrast rules (WCAG 2.1 AA)

@@ -72,12 +72,12 @@ export function SiteNav() {
     >
       <nav
         aria-label="Main"
-        className="mx-auto flex h-16 max-w-content items-center justify-between px-gutter md:h-20"
+        className="mx-auto flex h-16 max-w-content items-center justify-between gap-lg px-gutter md:h-20"
       >
         <Link href="/" onClick={close}>
           <Logo />
         </Link>
-        <ul className="hidden items-center gap-xl md:flex">
+        <ul className="hidden items-center gap-lg lg:flex xl:gap-xl">
           {navLinks.map((l) => (
             <li key={l.href}>
               <a
@@ -89,13 +89,13 @@ export function SiteNav() {
             </li>
           ))}
         </ul>
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <NavCta />
         </div>
         <button
           ref={buttonRef}
           type="button"
-          className="relative grid size-11 place-items-center rounded-xs border border-border-strong md:hidden"
+          className="relative grid size-11 place-items-center rounded-xs border border-border-strong lg:hidden"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -122,7 +122,7 @@ export function SiteNav() {
       <div
         id="mobile-menu"
         hidden={!open}
-        className="mobile-menu fixed inset-x-0 top-16 bottom-0 overflow-y-auto bg-bg-canvas px-gutter py-xl md:hidden"
+        className="mobile-menu fixed inset-x-0 top-16 bottom-0 overflow-y-auto bg-bg-canvas px-gutter py-xl md:top-20 lg:hidden"
       >
         <ol className="flex flex-col gap-lg">
           {navLinks.map((l, i) => (

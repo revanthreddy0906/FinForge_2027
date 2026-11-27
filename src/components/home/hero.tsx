@@ -23,8 +23,8 @@ export function Hero() {
 
   return (
     <section aria-labelledby="hero-title" className="px-gutter py-2xl md:py-4xl">
-      <div className="mx-auto flex max-w-content flex-col items-center gap-xl border border-border-frame px-lg py-xl md:flex-row md:gap-3xl md:p-3xl">
-        <div className="order-2 flex min-w-0 flex-1 flex-col gap-lg md:order-1">
+      <div className="mx-auto flex max-w-content flex-col items-center gap-xl border border-border-frame px-lg py-xl md:p-2xl lg:flex-row lg:gap-2xl xl:gap-3xl xl:p-3xl">
+        <div className="order-2 flex w-full min-w-0 flex-1 flex-col gap-lg lg:order-1">
           <div className="hero-rise" style={i(0)}>
             <Badge tone={badge.tone}>{badge.label}</Badge>
           </div>
@@ -59,7 +59,10 @@ export function Hero() {
             detection and cybersecurity. Only {String(event.teamCount)} teams. Build the systems
             that keep money safe.
           </p>
-          <dl className="hero-rise flex flex-col gap-md md:flex-row md:gap-xl" style={i(5)}>
+          <dl
+            className="hero-rise grid gap-md sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-x-xl"
+            style={i(5)}
+          >
             {facts.map(([k, v]) => (
               <div key={k} className="flex flex-col gap-2xs">
                 <dt className="text-eyebrow text-text-muted uppercase">{k}</dt>
@@ -67,18 +70,22 @@ export function Hero() {
               </div>
             ))}
           </dl>
-          <div className="hero-rise flex flex-col gap-sm md:flex-row" style={i(6)}>
+          <div className="hero-rise flex flex-col gap-sm sm:flex-row sm:flex-wrap" style={i(6)}>
             {event.registration !== "closed" ? (
-              <ButtonLink href={event.registrationPath}>Register your team</ButtonLink>
+              <ButtonLink href={event.registrationPath} className="whitespace-nowrap">
+                Register your team
+              </ButtonLink>
             ) : (
-              <ButtonLink href="#timeline">Get the timeline</ButtonLink>
+              <ButtonLink href="#timeline" className="whitespace-nowrap">
+                Get the timeline
+              </ButtonLink>
             )}
-            <ButtonLink href="#faq" variant="secondary">
+            <ButtonLink href="#faq" variant="secondary" className="whitespace-nowrap">
               Read the FAQ
             </ButtonLink>
           </div>
         </div>
-        <div className="order-1 md:order-2">
+        <div className="order-1 lg:order-2">
           <Seal />
         </div>
       </div>

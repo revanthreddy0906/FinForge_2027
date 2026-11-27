@@ -108,28 +108,40 @@ function WideDoodles() {
   );
 }
 
-/** The lighter set for phones and tablets, hung around the dial's square. */
+/**
+ * The lighter set for phones and tablets, hung around the dial's square. Phones keep them tight
+ * to the dial; tablets have side margins, so md moves each one out of the dial's way.
+ */
 function NarrowDoodles() {
   return (
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-x-0 top-0 z-20 aspect-square min-[72rem]:hidden"
     >
-      <CameraArt className="heist-bob absolute -top-[21%] -left-[6%] w-[38%]" />
-      <Note className="-top-[13%] left-[30%] -rotate-[5deg] text-body text-text-accent md:text-body-lg">
+      <CameraArt className="heist-bob absolute -top-[21%] -left-[6%] w-[38%] md:-top-[16%] md:-left-[34%] md:w-[30%]" />
+      <Note className="-top-[13%] left-[30%] -rotate-[5deg] text-body text-text-accent md:-top-[17%] md:left-[22%] md:text-body-lg">
         smile, you&apos;re on camera
       </Note>
-      <HookArt className="heist-sway absolute -top-[30%] -right-[4%] w-[22%]" style={d(1)} />
-      <BanditArt className="heist-peek absolute top-[84%] -left-[10%] w-[32%]" />
+      <HookArt
+        className="heist-sway absolute -top-[30%] -right-[4%] w-[22%] md:-top-[26%] md:-right-[26%] md:w-[18%]"
+        style={d(1)}
+      />
+      <BanditArt className="heist-peek absolute top-[84%] -left-[10%] w-[32%] md:top-[78%] md:-left-[36%] md:w-[28%]" />
       <div
-        className="heist-bob absolute top-[56%] -right-[9%] w-28 rotate-[7deg] bg-bg-accent px-sm py-xs text-left text-text-on-accent md:w-40"
+        className="heist-bob absolute top-[56%] -right-[9%] w-28 rotate-[7deg] bg-bg-accent px-sm py-xs text-left text-text-on-accent md:top-[44%] md:-right-[38%] md:w-32"
         style={d(2)}
       >
         <p className="hand-note text-heading-4">{prize}</p>
         <p className="leading-tight text-body-sm">in prizes, somewhere in here</p>
       </div>
-      <SparkleArt className="heist-twinkle absolute top-[22%] -left-[4%] w-4" style={d(1)} />
-      <SparkleArt className="heist-twinkle absolute top-[52%] -right-[5%] w-3" style={d(3)} />
+      <SparkleArt
+        className="heist-twinkle absolute top-[22%] -left-[4%] w-4 md:-left-[14%]"
+        style={d(1)}
+      />
+      <SparkleArt
+        className="heist-twinkle absolute top-[52%] -right-[5%] w-3 md:top-[86%] md:-right-[16%]"
+        style={d(3)}
+      />
     </div>
   );
 }

@@ -17,6 +17,9 @@ function cssVar(chunk: string, name: string): string | undefined {
   return pattern.exec(chunk)?.[1]?.trim();
 }
 const rem = (px: number) => (px === 0 ? "0" : `${String(px / 16)}rem`);
+/** Tablet values grow from mobile (at md) to desktop (at xl): clamp(mobile, …, desktop). */
+const fluid = (mobile: number, desktop: number) =>
+  `clamp(${rem(mobile)}, ${rem(mobile)} + ${String((desktop - mobile) / 16)} * var(--fluid), ${rem(desktop)})`;
 
 function hex(h: string): [number, number, number] {
   return [1, 3, 5].map((i) => Number.parseInt(h.slice(i, i + 2), 16) / 255) as [
@@ -61,8 +64,13 @@ describe("design tokens: CSS mirrors the Figma variables", () => {
       expect(cssVar(base, `text-${name}--line-height`), name).toBe(rem(style.mobile.lineHeight));
       const changes = JSON.stringify(style.mobile) !== JSON.stringify(style.desktop);
       expect(cssVar(desktop, `text-${name}`), name).toBe(
-        changes ? rem(style.desktop.size) : undefined,
+        changes ? fluid(style.mobile.size, style.desktop.size) : undefined,
       );
+      if (changes) {
+        expect(cssVar(desktop, `text-${name}--line-height`), name).toBe(
+          fluid(style.mobile.lineHeight, style.desktop.lineHeight),
+        );
+      }
     }
   });
 
@@ -71,7 +79,7 @@ describe("design tokens: CSS mirrors the Figma variables", () => {
       const mobile = typeof value === "number" ? value : value.mobile;
       expect(cssVar(base, `spacing-${name}`), name).toBe(rem(mobile));
       if (typeof value !== "number") {
-        expect(cssVar(desktop, `spacing-${name}`), name).toBe(rem(value.desktop));
+        expect(cssVar(desktop, `spacing-${name}`), name).toBe(fluid(value.mobile, value.desktop));
       }
     }
     for (const [name, value] of Object.entries(tokens.radius)) {

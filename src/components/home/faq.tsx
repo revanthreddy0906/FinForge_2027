@@ -33,7 +33,7 @@ const faqs = [
 export function Faq() {
   return (
     <Section id="faq" labelledBy="faq-title" tone="surface">
-      <div className="grid gap-2xl md:grid-cols-[1fr_1.4fr] md:gap-3xl">
+      <div className="grid gap-2xl lg:grid-cols-[1fr_1.4fr] lg:gap-3xl">
         <SectionHeader id="faq-title" index="06" eyebrow="FAQ" title="Questions, answered" />
         <div className="border-t border-border-default" data-reveal>
           {faqs.map((f, i) => (

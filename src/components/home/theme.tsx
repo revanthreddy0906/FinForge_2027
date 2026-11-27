@@ -57,7 +57,7 @@ export function Theme() {
         </p>
       </div>
 
-      <div className="grid gap-lg md:grid-cols-[1fr_1.4fr] md:gap-3xl" data-reveal>
+      <div className="grid gap-lg lg:grid-cols-[1fr_1.4fr] lg:gap-3xl" data-reveal>
         <h3 className="font-display text-heading-3 text-text-primary">In the markets today</h3>
         <p className="text-body text-text-secondary">
           French bank Crédit Mutuel Arkéa confirmed a cyberattack involving fraudulent transfers of

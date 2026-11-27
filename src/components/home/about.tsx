@@ -41,7 +41,7 @@ export function About() {
 
   return (
     <Section id="about" labelledBy="about-title">
-      <div className="grid gap-2xl md:grid-cols-[1.2fr_1fr] md:gap-3xl">
+      <div className="grid gap-2xl lg:grid-cols-[1.2fr_1fr] lg:gap-3xl">
         <SectionHeader
           id="about-title"
           index="01"
@@ -57,11 +57,16 @@ export function About() {
           </p>
         </div>
       </div>
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-border-subtle bg-border-subtle md:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-border-subtle bg-border-subtle xl:grid-cols-4">
         {stats.map(([value, label]) => (
-          <div key={label} className="flex flex-col gap-xs bg-bg-canvas p-lg md:p-xl" data-reveal>
+          <div
+            key={label}
+            className="flex min-w-0 flex-col gap-xs bg-bg-canvas p-md sm:p-lg md:p-xl"
+            data-reveal
+          >
             <dt className="order-2 text-body-sm text-text-muted">{label}</dt>
-            <dd className="order-1 font-display text-heading-2 text-text-primary tabular-nums">
+            {/* 7vw keeps "₹3,00,000" inside a half-width cell on 320px phones. */}
+            <dd className="order-1 font-display text-heading-2 whitespace-nowrap text-text-primary tabular-nums max-md:text-[min(var(--text-heading-2),7vw)]">
               {value}
             </dd>
           </div>
@@ -71,7 +76,7 @@ export function About() {
         <h3 className="font-display text-heading-3 text-text-primary" data-reveal>
           Why FinForge
         </h3>
-        <ul className="grid gap-lg md:grid-cols-3">
+        <ul className="grid gap-lg md:grid-cols-2 lg:grid-cols-3">
           {reasons.map((r) => (
             <li
               key={r.title}

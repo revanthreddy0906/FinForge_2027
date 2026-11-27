@@ -8,7 +8,7 @@ const RINGS = Array.from({ length: 9 }, (_, i) => i);
 
 export function Seal() {
   return (
-    <div aria-hidden="true" className="seal relative aspect-square w-70 shrink-0 md:w-110">
+    <div aria-hidden="true" className="seal relative aspect-square w-70 shrink-0 md:w-80 xl:w-110">
       <svg
         viewBox="0 0 440 440"
         className="absolute inset-0 size-full overflow-visible"
@@ -35,7 +35,7 @@ export function Seal() {
         })}
       </svg>
       <div className="seal-coin absolute inset-[24%] grid place-items-center rounded-full bg-bg-brand">
-        <span className="seal-rupee font-display text-[6rem] leading-none text-decor-rupee md:text-[9rem]">
+        <span className="seal-rupee font-display text-[6rem] leading-none text-decor-rupee md:text-[6.75rem] xl:text-[9rem]">
           ₹
         </span>
       </div>

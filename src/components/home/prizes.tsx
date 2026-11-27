@@ -9,12 +9,12 @@ export function Prizes() {
     <Section id="prizes" labelledBy="prizes-title" tone="surface">
       <SectionHeader id="prizes-title" index="04" eyebrow="Prizes" title="Worth building for" />
       <div
-        className="flex flex-col gap-lg border border-border-frame bg-bg-canvas p-xl md:flex-row md:items-end md:justify-between md:p-3xl"
+        className="flex flex-col gap-lg border border-border-frame bg-bg-canvas p-lg sm:p-xl md:p-2xl lg:flex-row lg:items-end lg:justify-between lg:gap-2xl xl:p-3xl"
         data-reveal
       >
         <div className="flex flex-col gap-sm">
           <p className="text-eyebrow text-text-accent uppercase">Total prize pool</p>
-          <p className="font-display text-numeral text-text-primary tabular-nums">
+          <p className="font-display text-numeral text-text-primary tabular-nums max-[22rem]:text-[3rem]">
             <CountUp value={event.prizePool} />
           </p>
         </div>
