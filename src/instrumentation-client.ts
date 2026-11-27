@@ -1,3 +1,5 @@
+import { startAnalytics } from "@/lib/analytics/track";
+import { afterLoadWhenIdle } from "@/lib/browser/when-idle";
 import { sharedSentryOptions } from "@/lib/monitoring/sentry-options";
 
 /**
@@ -18,24 +20,9 @@ function loadSentry() {
   });
 }
 
-function whenIdle(run: () => void) {
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(run, { timeout: 5000 });
-  } else {
-    setTimeout(run, 2000);
-  }
+if (sharedSentryOptions.enabled) {
+  afterLoadWhenIdle(loadSentry);
 }
 
-if (sharedSentryOptions.enabled) {
-  if (document.readyState === "complete") {
-    whenIdle(loadSentry);
-  } else {
-    window.addEventListener(
-      "load",
-      () => {
-        whenIdle(loadSentry);
-      },
-      { once: true },
-    );
-  }
-}
+// Product analytics (PostHog), also production only and loaded when idle. See docs/analytics.md.
+startAnalytics();

@@ -24,7 +24,7 @@ export function maskText(text: string): string {
     .replace(SECRET_PARAM, "$1[redacted]");
 }
 
-function maskUrl(url: string | undefined): string | undefined {
+export function maskUrl(url: string | undefined): string | undefined {
   if (url === undefined) return undefined;
   // Keep only origin and path: query strings and fragments can carry tokens or form values.
   const cut = url.search(/[?#]/);

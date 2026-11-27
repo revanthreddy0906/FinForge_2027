@@ -14,6 +14,16 @@ function isRegisterPage(pathname: string): boolean {
 }
 
 export function proxy(request: NextRequest) {
+  // next.config.ts turns off Next's own trailing-slash redirect for PostHog's sake, so pages
+  // keep one canonical URL here: /register/ -> /register.
+  const { pathname } = request.nextUrl;
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    // A plain URL: NextURL would put the trailing slash back when formatting.
+    const url = new URL(request.url);
+    url.pathname = pathname.replace(/\/+$/, "") || "/";
+    return NextResponse.redirect(url, 308);
+  }
+
   const nonce = createNonce();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const csp = buildCsp({
@@ -38,8 +48,10 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Pages only: static chunks, optimised images and metadata files need no CSP.
-      source: "/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|sitemap.xml).*)",
+      // Pages only: static chunks, optimised images, metadata files and the PostHog proxy
+      // (/ingest, rewritten in next.config.ts) need no CSP.
+      source:
+        "/((?!_next/static|_next/image|ingest/|ingest$|favicon.ico|icon.svg|robots.txt|sitemap.xml).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

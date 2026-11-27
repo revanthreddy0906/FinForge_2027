@@ -13,6 +13,7 @@ import {
 import { registerAction } from "@/app/register/actions";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { track } from "@/lib/analytics/track";
 import { fieldName } from "@/lib/registration/form-data";
 import { initialRegisterResult, type RegisterResult } from "@/lib/registration/register";
 import {
@@ -162,9 +163,17 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
   const [result, formAction, isPending] = useActionState(
     async (previous: RegisterResult, fd: FormData) => {
       const next = await registerAction(previous, fd);
-      if (next.status === "payment") rememberPendingKey(fd.get(fieldName.idempotencyKey));
-      if (next.status === "success") forgetPendingKey();
+      // Analytics: counts and fixed codes only, never what was typed (see src/lib/analytics).
+      if (next.status === "payment") {
+        rememberPendingKey(fd.get(fieldName.idempotencyKey));
+        track("registration_payment_shown", { member_count: next.payment.memberCount });
+      }
+      if (next.status === "success") {
+        forgetPendingKey();
+        track("registration_completed", { paid_now: false });
+      }
       if (next.status === "error") {
+        track("registration_server_error", { field_error_count: next.fieldErrors.size });
         setServerErrors(next.fieldErrors);
         setSummary(next.message);
         setResetSignal((n) => n + 1); // a Turnstile token works once
@@ -191,8 +200,13 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
   const [turnstileFailed, setTurnstileFailed] = useState(false);
 
   const clientErrors = useMemo(() => validate(values), [values]);
+  const started = useRef(false);
 
   const update = (change: (v: Values) => Values, path?: string) => {
+    if (!started.current) {
+      started.current = true;
+      track("registration_form_started");
+    }
     setValues(change);
     if (path) {
       setServerErrors((prev) => {
@@ -249,6 +263,7 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
     const errors = clientErrors;
     const firstError = orderedPaths(values.members.length).find((p) => errors.has(p));
     if (firstError) {
+      track("registration_form_invalid", { field_error_count: errors.size });
       setSummary("Some details need fixing. Check the highlighted fields.");
       requestAnimationFrame(() => document.getElementById(inputId(firstError))?.focus());
       return;
@@ -266,6 +281,7 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
     idempotencyKey.current ??= pendingKey() ?? crypto.randomUUID();
     const fd = new FormData(e.currentTarget);
     fd.set(fieldName.idempotencyKey, idempotencyKey.current);
+    track("registration_submitted", { member_count: values.members.length });
     startTransition(() => {
       formAction(fd);
     });
@@ -283,6 +299,7 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
         payment={result.payment}
         onPaid={(reference, teamName) => {
           forgetPendingKey();
+          track("registration_completed", { paid_now: true });
           setPaid({ reference, teamName });
         }}
       />
@@ -298,12 +315,13 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
     // method="post": if someone submits before the page's JavaScript has loaded (slow phone
     // networks), the browser must not fall back to GET, which would put names, emails and
     // the mobile number in the URL and the server logs.
+    // ph-no-capture: analytics never records clicks inside the form, as a second guard.
     <form
       method="post"
+      className="ph-no-capture flex flex-col gap-2xl"
       onSubmit={onSubmit}
       noValidate
       aria-describedby="privacy-note"
-      className="flex flex-col gap-2xl"
     >
       <div
         id="form-errors"

@@ -163,6 +163,19 @@ Last updated: 2026-11-27
     `--config auto` 0 findings (now in CI); Supabase advisors: only leaked-password protection
     (both projects); OWASP ZAP baseline on staging: 0 high, see Known issues for the mediums
 
+- **Product analytics** (27 Nov 2026)
+  - PostHog (US) via `posthog-js/no-external`. It runs in production only, is cookieless, and
+    loads after the page is idle. Events go first-party through `/ingest`, so the CSP is
+    unchanged. It respects DNT and GPC, never tracks `/admin`, and records no replays. A
+    `before_send` filter strips query strings, emails and phone numbers. Eight registration
+    funnel events; see `docs/analytics.md`.
+  - Local production build with PostHog on, desktop and 360px:
+    - no CSP or console errors, and only `/ingest/e/` was called;
+    - no test names, emails or phone numbers in any payload;
+    - with DNT on, no requests were sent.
+  - Lighthouse (mobile, local): performance 99 on `/` and `/register`, CLS 0.
+  - `/register/` still redirects to `/register` (now done in `src/proxy.ts`).
+
 ## Pending
 
 - Problem statements: texts and slot limits are TODO (provisional 19 each, in
@@ -182,6 +195,11 @@ Last updated: 2026-11-27
 - Code Connect: blocked by the Figma plan (needs a Dev/Full seat on Organization). Mapping table is
   ready in `docs/design-system.md`.
 - Add Lighthouse CI to the pipeline
+- PostHog: turn on cookieless mode in the PostHog project, add `NEXT_PUBLIC_POSTHOG_KEY` to Vercel
+  Production, then check live events after the next production deploy. Decide later whether to drop
+  Vercel Web Analytics, since pageviews are counted twice.
+- Local Lighthouse flags `/register` canonical as relative (`/register`) when no site URL is set;
+  check it on the production build.
 - Before launch (production): delete `NEXT_PUBLIC_REGISTRATION_STATE` (set to `coming-soon` now),
   put the live Razorpay keys and live webhook secret in Production, remove
   `finforge2027-prodtest.vercel.app` from `TURNSTILE_HOSTNAMES` and the Turnstile widget, set

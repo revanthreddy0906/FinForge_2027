@@ -30,6 +30,9 @@
   `'strict-dynamic'` allows them; data goes to `'self'`).
 - They only render when `VERCEL=1`, because `/_vercel/*` doesn't exist in local or CI builds.
 - Turn both on in the dashboard (Project > Analytics > Enable, Project > Speed Insights > Enable).
+- PostHog (product analytics and the registration funnel) runs next to them, in production only,
+  cookieless and first-party through `/ingest`. See `docs/analytics.md` for the one-time setup
+  (turn on cookieless mode in PostHog, then add `NEXT_PUBLIC_POSTHOG_KEY` to Production).
 - Bot Protection and BotID stay off: Turnstile already guards registration, and a platform bot
   challenge would block the k6 load test.
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { track } from "@/lib/analytics/track";
 import { Button } from "@/components/ui/button";
 import { event } from "@/config/event";
 import { feeBreakdown, formatPaise } from "@/lib/payments/amount";
@@ -98,11 +99,13 @@ export function PaymentStep({
       onPaid(answer.reference, answer.teamName);
       return;
     }
+    track("registration_payment_problem", { verify_failed: true });
     setPhase({ kind: "problem", message: answer.message, canCheck: answer.retry });
     requestAnimationFrame(() => statusRef.current?.focus());
   };
 
   const problem = (message: string) => {
+    track("registration_payment_problem", { failed_in_popup: failedOnce.current });
     setPhase({ kind: "problem", message, canCheck: false });
     requestAnimationFrame(() => statusRef.current?.focus());
   };
@@ -142,6 +145,7 @@ export function PaymentStep({
       failedOnce.current = true;
     });
     setPhase({ kind: "open" });
+    track("registration_payment_opened");
     checkout.open();
   };
 
@@ -150,7 +154,7 @@ export function PaymentStep({
   return (
     <section
       aria-labelledby="payment-title"
-      className="flex flex-col gap-lg border border-border-frame p-lg md:p-2xl"
+      className="ph-no-capture flex flex-col gap-lg border border-border-frame p-lg md:p-2xl"
       data-testid="payment-step"
     >
       <p className="text-eyebrow text-text-accent uppercase">Step 2 of 2 · Payment</p>

@@ -1,11 +1,27 @@
 import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
+import {
+  POSTHOG_INGEST_ORIGIN,
+  POSTHOG_KEY,
+  POSTHOG_PROXY_PATH,
+} from "./src/lib/analytics/posthog-hosts";
 import { securityHeaders } from "./src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // PostHog's ingest paths end in a slash (/e/, /i/v0/e/), which Next would otherwise redirect
+  // before the /ingest rewrite runs. src/proxy.ts keeps the slash redirect for every page.
+  skipTrailingSlashRedirect: true,
+  // Analytics events go to our own origin and on to PostHog US, so the CSP's connect-src stays
+  // 'self' and ad blockers that block PostHog's domain don't skew the numbers.
+  rewrites() {
+    if (POSTHOG_KEY === "") return Promise.resolve([]);
+    return Promise.resolve([
+      { source: `${POSTHOG_PROXY_PATH}/:path*`, destination: `${POSTHOG_INGEST_ORIGIN}/:path*` },
+    ]);
+  },
   // The Content-Security-Policy is per request (it carries a nonce) and is set in src/proxy.ts.
   headers() {
     const consoleHeaders = [
