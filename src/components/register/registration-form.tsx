@@ -295,7 +295,11 @@ export function RegistrationForm({ siteKey }: { siteKey: string }) {
     .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
 
   return (
+    // method="post": if someone submits before the page's JavaScript has loaded (slow phone
+    // networks), the browser must not fall back to GET, which would put names, emails and
+    // the mobile number in the URL and the server logs.
     <form
+      method="post"
       onSubmit={onSubmit}
       noValidate
       aria-describedby="privacy-note"
