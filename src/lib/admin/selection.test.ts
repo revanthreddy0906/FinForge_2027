@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   assignmentLabel,
-  formatTeamCode,
   rankingLabel,
   selectionCsv,
   statementsWithRoom,
-  teamCodesCsv,
   teamsNeedingStatement,
   type SelectionTeam,
 } from "./selection";
@@ -14,7 +12,6 @@ const team = (over: Partial<SelectionTeam>): SelectionTeam => ({
   reference: "FF27-0001",
   teamName: "Hawks",
   leaderName: "Asha Rao",
-  code: "K7MQ2XRT",
   ranking: [3, 1, 4, 2],
   submittedAt: "2027-03-10T04:32:13.120+00:00",
   assignedStatement: 3,
@@ -24,8 +21,7 @@ const team = (over: Partial<SelectionTeam>): SelectionTeam => ({
 });
 
 describe("labels", () => {
-  it("formats codes and rankings", () => {
-    expect(formatTeamCode("K7MQ2XRT")).toBe("K7MQ-2XRT");
+  it("formats rankings", () => {
     expect(rankingLabel([3, 1, 4, 2])).toBe("3 › 1 › 4 › 2");
     expect(rankingLabel(null)).toBe("");
   });
@@ -61,12 +57,6 @@ describe("hand assignment helpers", () => {
 });
 
 describe("CSV files", () => {
-  it("lists team codes for check-in slips", () => {
-    expect(teamCodesCsv([team({})])).toBe(
-      '﻿"Reference","Team","Leader","Team code"\r\n"FF27-0001","Hawks","Asha Rao","K7MQ-2XRT"\r\n',
-    );
-  });
-
   it("orders choices by submission time, never-submitted last, and defuses formulas", () => {
     const csv = selectionCsv(
       [

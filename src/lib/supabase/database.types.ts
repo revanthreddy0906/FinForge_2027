@@ -249,7 +249,6 @@ export type Database = {
           leader_name: string;
           ranking: number[];
           submitted_at: string;
-          team_code: string;
           team_name: string;
           team_reference: string;
         }[];
@@ -299,7 +298,6 @@ export type Database = {
         Args: never;
         Returns: {
           statement_id: number;
-          team_name: string;
           team_reference: string;
         }[];
       };
@@ -332,7 +330,7 @@ export type Database = {
       };
       set_selection_state: { Args: { p_state: string }; Returns: undefined };
       submit_statement_choice: {
-        Args: { p_code: string; p_ranking: number[]; p_reference: string };
+        Args: { p_ranking: number[]; p_reference: string };
         Returns: {
           outcome: string;
           submitted_at: string;

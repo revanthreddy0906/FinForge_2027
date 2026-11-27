@@ -37,7 +37,7 @@ test("the selection page explains when it can't check the window", async ({ page
   await expect(page.getByRole("heading", { name: "This page couldn't load" })).toBeVisible();
   // No statement texts, and no form, unless the window is open.
   await expect(page.getByText("TODO: problem statement")).toHaveCount(0);
-  await expect(page.getByLabel("Team code")).toHaveCount(0);
+  await expect(page.getByLabel("Team reference")).toHaveCount(0);
   await expectAccessible(page);
   expect(errors).toEqual([]);
 });
@@ -56,7 +56,7 @@ test("the results page explains when results can't load", async ({ page }) => {
 test("the organizer panel and its downloads need a sign-in", async ({ page }) => {
   await page.goto("/admin/statements");
   await expect(page).toHaveURL(/\/admin\/login$/);
-  for (const path of ["/admin/statements/codes", "/admin/statements/export"]) {
+  for (const path of ["/admin/statements/export"]) {
     const res = await page.request.get(path, { maxRedirects: 0 });
     expect([303, 307]).toContain(res.status());
   }

@@ -6,7 +6,7 @@ import { requireConsole } from "./require-console";
 
 /** A CSV download for the selection console, with the same access rules as the console page. */
 export async function selectionCsvResponse(
-  from: "/admin/statements/codes" | "/admin/statements/export",
+  from: "/admin/statements/export",
   name: string,
   build: (teams: readonly SelectionTeam[]) => string,
 ): Promise<NextResponse> {

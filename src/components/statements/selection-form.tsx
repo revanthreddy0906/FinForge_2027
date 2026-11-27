@@ -83,7 +83,6 @@ function DoneView({
 export function SelectionForm({ statements }: { statements: readonly StatementOption[] }) {
   const summaryRef = useRef<HTMLDivElement>(null);
   const [reference, setReference] = useState("");
-  const [code, setCode] = useState("");
   const [order, setOrder] = useState<number[]>(() => statements.map((s) => s.id));
   const [step, setStep] = useState<"edit" | "review">("edit");
   const [errors, setErrors] = useState<SelectionErrors>({});
@@ -128,19 +127,19 @@ export function SelectionForm({ statements }: { statements: readonly StatementOp
   };
 
   const onReview = () => {
-    const parsed = selectionSchema.safeParse({ reference, code, ranking: order });
+    const parsed = selectionSchema.safeParse({ reference, ranking: order });
     if (!parsed.success) {
       const found = selectionErrorsFrom(parsed.error);
       setErrors(found);
       setSummary("Some details need fixing. Check the highlighted fields.");
-      const first = found.reference ? "f-reference" : found.code ? "f-code" : null;
       requestAnimationFrame(() =>
-        first ? document.getElementById(first)?.focus() : summaryRef.current?.focus(),
+        found.reference
+          ? document.getElementById("f-reference")?.focus()
+          : summaryRef.current?.focus(),
       );
       return;
     }
     setReference(parsed.data.reference);
-    setCode(parsed.data.code);
     setErrors({});
     setSummary(null);
     setStep("review");
@@ -149,14 +148,13 @@ export function SelectionForm({ statements }: { statements: readonly StatementOp
   const onSubmit = () => {
     const fd = new FormData();
     fd.set(selectionField.reference, reference);
-    fd.set(selectionField.code, code);
     fd.set(selectionField.ranking, order.join(","));
     startTransition(() => {
       formAction(fd);
     });
   };
 
-  const errorList = [errors.reference, errors.code, errors.ranking].filter(
+  const errorList = [errors.reference, errors.ranking].filter(
     (e, i, all): e is string => Boolean(e) && all.indexOf(e) === i,
   );
 
@@ -200,7 +198,7 @@ export function SelectionForm({ statements }: { statements: readonly StatementOp
             <Field
               id="f-reference"
               label="Team reference"
-              hint="From your registration, for example FF27-0080."
+              hint="Your team's own reference from registration, for example FF27-0080. Each team can submit only once, so type it carefully."
               required
               autoComplete="off"
               autoCapitalize="characters"
@@ -212,22 +210,6 @@ export function SelectionForm({ statements }: { statements: readonly StatementOp
                 setErrors((prev) => ({ ...prev, reference: undefined }));
               }}
               error={errors.reference}
-            />
-            <Field
-              id="f-code"
-              label="Team code"
-              hint="The 8-character code on the slip you got at check-in."
-              required
-              autoComplete="off"
-              autoCapitalize="characters"
-              spellCheck={false}
-              maxLength={20}
-              value={code}
-              onChange={(e) => {
-                setCode(e.target.value);
-                setErrors((prev) => ({ ...prev, code: undefined }));
-              }}
-              error={errors.code}
             />
           </fieldset>
 
@@ -303,9 +285,18 @@ export function SelectionForm({ statements }: { statements: readonly StatementOp
           >
             Check your choices
           </h2>
-          <p className="text-body text-text-secondary">
-            Team <span className="text-text-primary">{reference}</span>
-          </p>
+          <div className="flex flex-col gap-2xs">
+            <p className="text-body text-text-secondary">Submitting for team</p>
+            <p
+              className="font-display text-heading-3 text-text-accent tabular-nums"
+              data-testid="review-reference"
+            >
+              {reference}
+            </p>
+            <p className="text-body-sm text-text-secondary">
+              Make sure this is your own team&apos;s reference.
+            </p>
+          </div>
           <ol className="flex flex-col gap-sm" data-testid="review-order">
             {order.map((id, i) => (
               <li key={id} className="flex gap-md text-body text-text-primary">

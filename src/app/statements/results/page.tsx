@@ -8,7 +8,7 @@ import { publishedResults, selectionStatus, type PublishedResult } from "@/lib/s
 
 export const metadata: Metadata = {
   title: "Problem statement results · FinForge 2027",
-  description: "Which problem statement each FinForge 2027 team will build for.",
+  description: "Which problem statement each FinForge 2027 team will build for, by team reference.",
   alternates: { canonical: "/statements/results" },
 };
 
@@ -67,13 +67,13 @@ async function Results() {
               {teams.length} {teams.length === 1 ? "team" : "teams"}
             </p>
             {teams.length > 0 && (
-              <ul className="flex flex-col divide-y divide-border-subtle border-y border-border-subtle">
+              <ul className="grid grid-cols-3 gap-xs sm:grid-cols-4 md:grid-cols-6">
                 {teams.map((t) => (
-                  <li key={t.reference} className="flex flex-wrap gap-x-md gap-y-2xs py-sm">
-                    <span className="w-28 shrink-0 text-label text-text-accent tabular-nums">
-                      {t.reference}
-                    </span>
-                    <span className="text-body text-text-primary">{t.teamName}</span>
+                  <li
+                    key={t.reference}
+                    className="border border-border-subtle px-sm py-xs text-center text-label text-text-primary tabular-nums"
+                  >
+                    {t.reference}
                   </li>
                 ))}
               </ul>

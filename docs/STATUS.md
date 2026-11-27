@@ -132,13 +132,13 @@ Last updated: 2026-11-27
     branch, temporary Vercel automation bypass, now revoked). Test rows deleted from staging
 
 - **Event-day problem statement selection** (ADR `docs/adr/0005-statement-selection.md`)
-  - `/statements` (QR target): team reference plus team code, rank all four statements, review,
-    submit once. `/statements/results` shows assignments only after Publish
+  - `/statements` (QR target): team reference only, rank all four statements, review, submit
+    once. `/statements/results` shows references grouped by statement, only after Publish
   - First come, first served in the database (lock order, `clock_timestamp()`), one entry per
-    team, paid and registered teams only. Random 8-character team code per paid team
+    team, paid and registered teams only. Organizers can reopen the window (while unpublished)
   - Organizer panel `/admin/statements`: open and close the window, publish and unpublish, assign
-    leftover teams by hand, CSV of team codes (for check-in slips) and of every team's choices
-  - Staging: migrations applied, advisors clean, `supabase/tests/selection_rules.sql` 56/56;
+    leftover teams by hand, CSV of every team's choices
+  - Staging: migrations applied, advisors clean, `supabase/tests/selection_rules.sql` 52/52;
     Vitest (schema, flow, CSV) pass; Playwright no-database checks 50/50 (desktop + 360px, axe 0)
 
 ## Pending
@@ -146,7 +146,8 @@ Last updated: 2026-11-27
 - Problem statements: texts and slot limits are TODO (provisional 19 each, in
   `src/config/problem-statements.ts` and `private.problem_statements`). Revanth will confirm
   them, and one statement may take an extra team, handled by hand.
-- Problem statements: apply migrations `20261127100000` and `20261127100100` to production.
+- Problem statements: apply migrations `20261127100000`, `20261127100100` and `20261127100200`
+  to production.
   Run the staging e2e flow (`e2e/statements-flow.spec.ts`, in CI) and a k6 burst of 75 submits
   from one IP before event day. Make the QR code once the production domain is final.
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG

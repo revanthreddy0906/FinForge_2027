@@ -1,14 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  normaliseCode,
-  normaliseReference,
-  selectionFormData,
-  selectionSchema,
-  copy,
-} from "./schema";
+import { normaliseReference, selectionFormData, selectionSchema, copy } from "./schema";
 import { submitCopy, submitSelection, type SaveChoiceOutcome, type SubmitDeps } from "./submit";
 
-const valid = { reference: "FF27-0080", code: "K7MQ2XRT", ranking: [3, 1, 4, 2] };
+const valid = { reference: "FF27-0080", ranking: [3, 1, 4, 2] };
 
 describe("normalising what people type", () => {
   it.each([
@@ -21,29 +15,17 @@ describe("normalising what people type", () => {
   ])("reference %j becomes %j", (raw, want) => {
     expect(normaliseReference(raw)).toBe(want);
   });
-
-  it.each([
-    ["k7mq2xrt", "K7MQ2XRT"],
-    ["K7MQ-2XRT", "K7MQ2XRT"],
-    [" k7mq 2xrt ", "K7MQ2XRT"],
-  ])("code %j becomes %j", (raw, want) => {
-    expect(normaliseCode(raw)).toBe(want);
-  });
 });
 
 describe("selectionSchema", () => {
-  it("accepts a reference, a code and a full ranking", () => {
-    const parsed = selectionSchema.parse({ ...valid, reference: "ff27-80", code: "k7mq-2xrt" });
+  it("accepts a reference and a full ranking", () => {
+    const parsed = selectionSchema.parse({ ...valid, reference: "ff27-80" });
     expect(parsed).toEqual(valid);
   });
 
   it.each([
     [{ ...valid, reference: "" }, "reference", copy.referenceRequired],
     [{ ...valid, reference: "FF26-0001" }, "reference", copy.referenceFormat],
-    [{ ...valid, code: "" }, "code", copy.codeRequired],
-    [{ ...valid, code: "K7MQ2XR0" }, "code", copy.codeFormat],
-    [{ ...valid, code: "K7MQ2XRTT" }, "code", copy.codeFormat],
-    [{ ...valid, code: "I7MQ2XRT" }, "code", copy.codeFormat],
     [{ ...valid, ranking: [1, 2, 3] }, "ranking", copy.rankingInvalid],
     [{ ...valid, ranking: [1, 1, 2, 3] }, "ranking", copy.rankingInvalid],
     [{ ...valid, ranking: [1, 2, 3, 5] }, "ranking", copy.rankingInvalid],
@@ -56,7 +38,7 @@ describe("selectionSchema", () => {
   });
 
   it("caps very long input before normalising", () => {
-    expect(selectionSchema.safeParse({ ...valid, code: "A".repeat(41) }).success).toBe(false);
+    expect(selectionSchema.safeParse({ ...valid, reference: "F".repeat(41) }).success).toBe(false);
   });
 });
 
@@ -64,7 +46,6 @@ describe("selectionFormData", () => {
   it("reads the ranking as numbers in order", () => {
     const fd = new FormData();
     fd.set("reference", "FF27-0080");
-    fd.set("code", "K7MQ2XRT");
     fd.set("ranking", "3,1,4,2");
     expect(selectionFormData(fd)).toEqual(valid);
   });
@@ -72,7 +53,6 @@ describe("selectionFormData", () => {
   it("leaves missing fields undefined", () => {
     expect(selectionFormData(new FormData())).toEqual({
       reference: undefined,
-      code: undefined,
       ranking: undefined,
     });
   });
@@ -117,8 +97,11 @@ describe("submitSelection", () => {
 
   it("never calls the database for invalid input", async () => {
     const d = deps({ ok: true, outcome: "submitted", submittedAt: "x" });
-    const result = await submitSelection({ ...valid, code: "nope" }, d);
-    expect(result).toMatchObject({ status: "error", fieldErrors: { code: copy.codeFormat } });
+    const result = await submitSelection({ ...valid, reference: "nope" }, d);
+    expect(result).toMatchObject({
+      status: "error",
+      fieldErrors: { reference: copy.referenceFormat },
+    });
     expect(d.allowNetwork).not.toHaveBeenCalled();
     expect(d.saveChoice).not.toHaveBeenCalled();
   });
@@ -133,7 +116,7 @@ describe("submitSelection", () => {
   });
 
   it.each([
-    ["invalid_proof", submitCopy.invalidProof],
+    ["team_not_found", submitCopy.teamNotFound],
     ["selection_not_open", submitCopy.notOpen],
     ["selection_closed", submitCopy.closed],
     ["not_eligible", submitCopy.notEligible],
@@ -144,11 +127,9 @@ describe("submitSelection", () => {
     expect(result).toMatchObject({ status: "error", message });
   });
 
-  it("marks both fields when the reference and code don't match", async () => {
-    const result = await submitSelection(valid, deps({ ok: false, code: "invalid_proof" }));
-    expect(result).toMatchObject({
-      fieldErrors: { reference: submitCopy.invalidProof, code: submitCopy.invalidProof },
-    });
+  it("marks the reference field when no team has that reference", async () => {
+    const result = await submitSelection(valid, deps({ ok: false, code: "team_not_found" }));
+    expect(result).toMatchObject({ fieldErrors: { reference: submitCopy.teamNotFound } });
   });
 
   it("turns a thrown error (for example no rate limiter) into a retry message", async () => {

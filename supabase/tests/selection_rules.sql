@@ -1,4 +1,4 @@
--- Problem statement selection rules test (migrations 20261127100000 and 20261127100100). Run in
+-- Problem statement selection rules test (migrations 20261127100000, 20261127100100 and 20261127100200). Run in
 -- the Supabase SQL editor or via execute_sql, on STAGING. Everything runs in one transaction that
 -- always ends with an exception, so nothing is kept. Every line of the report should start with "ok".
 
@@ -40,7 +40,6 @@ declare
   t uuid[] := '{}';
   unpaid uuid;
   ref text[] := '{}';
-  code text[] := '{}';
   r record;
   n int;
   t1 timestamptz;
@@ -58,37 +57,32 @@ begin
   unpaid := pg_temp.make_team(run || 'U', false);
   reset role;
 
-  -- Codes: one per paid team, none for unpaid teams.
-  select array_agg(tm.reference order by tm.seq), array_agg(c.code order by tm.seq) into ref, code
-  from unnest(t) as x(id) join public.teams tm on tm.id = x.id join private.team_codes c on c.team_id = tm.id;
-  out := out || pg_temp.check(cardinality(code) = 7, 'every paid team has a code');
-  out := out || pg_temp.check((select bool_and(c ~ '^[A-HJ-NP-Z2-9]{8}$') from unnest(code) c), 'codes are 8 characters without look-alikes');
-  out := out || pg_temp.check(not exists (select 1 from private.team_codes where team_id = unpaid), 'unpaid team has no code');
+  -- References of the paid test teams, in creation order.
+  select array_agg(tm.reference order by tm.seq) into ref
+  from unnest(t) as x(id) join public.teams tm on tm.id = x.id;
 
   set local role service_role;
   -- Window not open yet.
   out := out || pg_temp.expect_err('refused before the window opens',
-    format($$select public.submit_statement_choice(%L, %L, '{1,2,3,4}')$$, ref[1], code[1]), 'selection_not_open');
+    format($$select public.submit_statement_choice(%L, '{1,2,3,4}')$$, ref[1]), 'selection_not_open');
   reset role;
   update private.event_settings set selection_state = 'open' where id;
   set local role service_role;
 
   -- Bad input and bad proof.
-  out := out || pg_temp.expect_err('ranking with a repeat refused', format($$select public.submit_statement_choice(%L, %L, '{1,1,2,3}')$$, ref[1], code[1]), 'invalid_ranking');
-  out := out || pg_temp.expect_err('ranking of 3 refused', format($$select public.submit_statement_choice(%L, %L, '{1,2,3}')$$, ref[1], code[1]), 'invalid_ranking');
-  out := out || pg_temp.expect_err('ranking with 5 refused', format($$select public.submit_statement_choice(%L, %L, '{1,2,3,5}')$$, ref[1], code[1]), 'invalid_ranking');
-  out := out || pg_temp.expect_err('wrong code refused', format($$select public.submit_statement_choice(%L, 'ABCDEFGH', '{1,2,3,4}')$$, ref[1]), 'invalid_proof');
-  out := out || pg_temp.expect_err('another team''s code refused', format($$select public.submit_statement_choice(%L, %L, '{1,2,3,4}')$$, ref[1], code[2]), 'invalid_proof');
-  out := out || pg_temp.expect_err('unknown reference refused (same error)', format($$select public.submit_statement_choice('FF27-9999', %L, '{1,2,3,4}')$$, code[1]), 'invalid_proof');
-  out := out || pg_temp.expect_err('unpaid team refused (it has no code)',
-    format($$select public.submit_statement_choice((select reference from public.teams where id = %L), 'ABCDEFGH', '{1,2,3,4}')$$, unpaid), 'invalid_proof');
+  out := out || pg_temp.expect_err('ranking with a repeat refused', format($$select public.submit_statement_choice(%L, '{1,1,2,3}')$$, ref[1]), 'invalid_ranking');
+  out := out || pg_temp.expect_err('ranking of 3 refused', format($$select public.submit_statement_choice(%L, '{1,2,3}')$$, ref[1]), 'invalid_ranking');
+  out := out || pg_temp.expect_err('ranking with 5 refused', format($$select public.submit_statement_choice(%L, '{1,2,3,5}')$$, ref[1]), 'invalid_ranking');
+  out := out || pg_temp.expect_err('unknown reference refused', $$select public.submit_statement_choice('FF27-9999', '{1,2,3,4}')$$, 'team_not_found');
+  out := out || pg_temp.expect_err('unpaid team refused',
+    format($$select public.submit_statement_choice((select reference from public.teams where id = %L), '{1,2,3,4}')$$, unpaid), 'not_eligible');
 
   -- First come, first served with fallbacks. Everyone ranks 1, 2, 3, 4.
-  select * into r from public.submit_statement_choice(lower(' ' || ref[1] || ' '), lower(code[1]), '{1,2,3,4}');
-  out := out || pg_temp.check(r.outcome = 'submitted', 'first team submits (reference and code trimmed, any case)');
+  select * into r from public.submit_statement_choice(lower(' ' || ref[1] || ' '), '{1,2,3,4}');
+  out := out || pg_temp.check(r.outcome = 'submitted', 'first team submits (reference trimmed, any case)');
   t1 := r.submitted_at;
   for i in 2..5 loop
-    perform public.submit_statement_choice(ref[i], code[i], '{1,2,3,4}');
+    perform public.submit_statement_choice(ref[i], '{1,2,3,4}');
   end loop;
   reset role;
   out := out || pg_temp.check((select assigned_statement = 1 and assigned_choice = 1 from public.statement_choices where team_id = t[1]), 'team 1 gets its 1st choice');
@@ -102,7 +96,7 @@ begin
 
   set local role service_role;
   -- One entry per team.
-  select * into r from public.submit_statement_choice(ref[1], code[1], '{4,3,2,1}');
+  select * into r from public.submit_statement_choice(ref[1], '{4,3,2,1}');
   out := out || pg_temp.check(r.outcome = 'already_submitted' and r.submitted_at = t1, 'second submit returns already_submitted with the first time');
   reset role;
   out := out || pg_temp.check((select ranking = '{1,2,3,4}' and assigned_statement = 1 from public.statement_choices where team_id = t[1]), 'second submit changed nothing');
@@ -111,7 +105,7 @@ begin
   -- Withdrawn team refused.
   update public.teams set status = 'withdrawn' where id = t[6];
   set local role service_role;
-  out := out || pg_temp.expect_err('withdrawn team refused', format($$select public.submit_statement_choice(%L, %L, '{1,2,3,4}')$$, ref[6], code[6]), 'not_eligible');
+  out := out || pg_temp.expect_err('withdrawn team refused', format($$select public.submit_statement_choice(%L, '{1,2,3,4}')$$, ref[6]), 'not_eligible');
   reset role;
   update public.teams set status = 'registered' where id = t[6];
 
@@ -136,14 +130,14 @@ begin
   out := out || pg_temp.expect_err('organizer cannot write a ranking', format($$insert into public.statement_choices (team_id, ranking, submitted_at) values (%L, '{1,2,3,4}', now())$$, t[6]), '42501');
   perform public.set_selection_state('closed');
   select count(*) into n from public.admin_selection_teams() x where x.team_reference = any (ref);
-  out := out || pg_temp.check(n = 7, 'organizer sees all paid test teams with codes');
+  out := out || pg_temp.check(n = 7, 'organizer sees all paid test teams');
   out := out || pg_temp.check((select assigned = 1 and slots = 1 from public.admin_statement_slots() where statement_id = 1), 'organizer sees slots used');
   out := out || pg_temp.expect_err('hand assignment into a full statement refused', format($$select public.assign_statement_by_hand(%L, 1::smallint)$$, ref[6]), 'statement_full');
   out := out || pg_temp.expect_err('hand assignment into a 0-slot statement refused', format($$select public.assign_statement_by_hand(%L, 4::smallint)$$, ref[6]), 'statement_full');
   out := out || pg_temp.expect_err('assigned team cannot be reassigned', format($$select public.assign_statement_by_hand(%L, 3::smallint)$$, ref[1]), 'already_assigned');
   out := out || pg_temp.expect_err('direct overwrite of an assignment refused', format($$update public.statement_choices set assigned_statement = 2 where team_id = %L$$, t[1]), 'already_assigned');
   out := out || pg_temp.expect_err('unpaid team cannot be assigned', format($$select public.assign_statement_by_hand((select reference from public.teams where id = %L), 2::smallint)$$, unpaid), 'team_not_found');
-  out := out || pg_temp.expect_err('organizer session cannot call submit', format($$select public.submit_statement_choice(%L, %L, '{1,2,3,4}')$$, ref[6], code[6]), '42501');
+  out := out || pg_temp.expect_err('organizer session cannot call submit', format($$select public.submit_statement_choice(%L, '{1,2,3,4}')$$, ref[6]), '42501');
   reset role;
   update private.problem_statements set slots = 3 where id = 2;
   perform set_config('request.jwt.claims', '{"email":"sel-organizer@example.com","role":"authenticated","aal":"aal2"}', true);
@@ -155,7 +149,7 @@ begin
   out := out || pg_temp.check((select assigned_statement = 2 and ranking is null from public.statement_choices where team_id = t[6]), 'team that never submitted assigned by hand');
 
   set local role service_role;
-  out := out || pg_temp.expect_err('submissions refused once closed', format($$select public.submit_statement_choice(%L, %L, '{1,2,3,4}')$$, ref[6], code[6]), 'selection_closed');
+  out := out || pg_temp.expect_err('submissions refused once closed', format($$select public.submit_statement_choice(%L, '{1,2,3,4}')$$, ref[6]), 'selection_closed');
   reset role;
   perform set_config('request.jwt.claims', '{"email":"sel-organizer@example.com","role":"authenticated","aal":"aal2"}', true);
   set local role authenticated;
@@ -166,6 +160,7 @@ begin
   set local role service_role;
   select count(*) into n from public.published_results() p where p.team_reference = any (ref);
   out := out || pg_temp.check(n = 6, 'all six test teams in the published results');
+  out := out || pg_temp.check((select count(*) from information_schema.routines rt join information_schema.parameters x on x.specific_name = rt.specific_name where rt.routine_name = 'published_results' and x.parameter_mode = 'OUT') = 2, 'results carry only reference and statement');
   select * into r from public.selection_status();
   out := out || pg_temp.check(r.selection_state = 'closed' and r.results_published, 'status says closed and published');
   reset role;
@@ -176,15 +171,26 @@ begin
   set local role service_role;
   select count(*) into n from public.published_results();
   out := out || pg_temp.check(n = 0, 'unpublish hides results again');
+  reset role;
+
+  -- Reopening for teams that couldn't submit (allowed once results are unpublished).
+  perform set_config('request.jwt.claims', '{"email":"sel-organizer@example.com","role":"authenticated","aal":"aal2"}', true);
+  set local role authenticated;
+  perform public.set_selection_state('open');
+  reset role;
+  set local role service_role;
+  select * into r from public.submit_statement_choice(ref[7], '{1,2,3,4}');
+  out := out || pg_temp.check(r.outcome = 'submitted', 'after reopening, a team that had not submitted can submit');
+  select * into r from public.submit_statement_choice(ref[6], '{1,2,3,4}');
+  out := out || pg_temp.check(r.outcome = 'already_submitted' and r.submitted_at is null, 'a team assigned by hand stays as it is after reopening');
 
   -- Public roles see and call nothing.
   set local role anon;
   out := out || pg_temp.expect_err('anon cannot read entries', $$select * from public.statement_choices$$, '42501');
-  out := out || pg_temp.expect_err('anon cannot submit', $$select public.submit_statement_choice('FF27-0001','ABCDEFGH','{1,2,3,4}')$$, '42501');
+  out := out || pg_temp.expect_err('anon cannot submit', $$select public.submit_statement_choice('FF27-0001','{1,2,3,4}')$$, '42501');
   out := out || pg_temp.expect_err('anon cannot read results function', $$select public.published_results()$$, '42501');
   out := out || pg_temp.expect_err('anon cannot read status', $$select public.selection_status()$$, '42501');
   out := out || pg_temp.expect_err('anon cannot open the window', $$select public.set_selection_state('open')$$, '42501');
-  out := out || pg_temp.expect_err('anon cannot read team codes', $$select * from private.team_codes$$, '42501');
   reset role;
   perform set_config('request.jwt.claims', '{"email":"stranger@example.com","role":"authenticated","aal":"aal2"}', true);
   set local role authenticated;
@@ -192,9 +198,7 @@ begin
   out := out || pg_temp.check(n = 0, 'signed-in non-organizer reads no entries');
   out := out || pg_temp.expect_err('non-organizer cannot open the window', $$select public.set_selection_state('open')$$, 'not_admin');
   out := out || pg_temp.expect_err('non-organizer cannot list teams', $$select public.admin_selection_teams()$$, 'not_admin');
-  select count(*) into n from private.team_codes;
-  out := out || pg_temp.check(n = 0, 'non-organizer reads no team codes');
-  out := out || pg_temp.expect_err('non-organizer cannot submit', $$select public.submit_statement_choice('FF27-0001','ABCDEFGH','{1,2,3,4}')$$, '42501');
+  out := out || pg_temp.expect_err('non-organizer cannot submit', $$select public.submit_statement_choice('FF27-0001','{1,2,3,4}')$$, '42501');
 
   reset role;
   raise exception E'REPORT\n%', out;

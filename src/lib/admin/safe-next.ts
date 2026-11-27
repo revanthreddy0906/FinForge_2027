@@ -2,7 +2,6 @@ const consolePaths = new Set([
   "/admin",
   "/admin/export",
   "/admin/statements",
-  "/admin/statements/codes",
   "/admin/statements/export",
 ]);
 

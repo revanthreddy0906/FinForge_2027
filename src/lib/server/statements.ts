@@ -13,7 +13,6 @@ export interface SelectionStatus {
 
 export interface PublishedResult {
   reference: string;
-  teamName: string;
   statementId: number;
 }
 
@@ -57,18 +56,14 @@ export async function publishedResults(): Promise<PublishedResult[]> {
     console.error("[statements] results read failed", { code: error.code });
     throw new Error("results unavailable");
   }
-  return data.map((r) => ({
-    reference: r.team_reference,
-    teamName: r.team_name,
-    statementId: r.statement_id,
-  }));
+  return data.map((r) => ({ reference: r.team_reference, statementId: r.statement_id }));
 }
 
 const knownCodes = new Set<string>([
   "invalid_ranking",
   "selection_not_open",
   "selection_closed",
-  "invalid_proof",
+  "team_not_found",
   "not_eligible",
 ]);
 function isDbError(code: string): code is SubmitDbError {
@@ -79,7 +74,6 @@ function isDbError(code: string): code is SubmitDbError {
 export async function saveChoice(input: SelectionInput): Promise<SaveChoiceOutcome> {
   const { data, error } = await supabaseAdmin().rpc("submit_statement_choice", {
     p_reference: input.reference,
-    p_code: input.code,
     p_ranking: input.ranking,
   });
   if (error) {

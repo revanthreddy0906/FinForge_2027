@@ -6,7 +6,6 @@ import { problemStatements, statementTitle } from "@/config/problem-statements";
 import { formatRegisteredAt } from "@/lib/admin/registrations";
 import {
   assignmentLabel,
-  formatTeamCode,
   rankingLabel,
   statementsWithRoom,
   teamsNeedingStatement,
@@ -208,9 +207,6 @@ async function Panel({ searchParams }: { searchParams: Promise<Params> }) {
           )}
         </div>
         <div className="flex flex-wrap gap-sm">
-          <a href="/admin/statements/codes" className={buttonClasses("secondary")} download>
-            Download team codes (CSV)
-          </a>
           <a href="/admin/statements/export" className={buttonClasses("secondary")} download>
             Download choices (CSV)
           </a>
@@ -334,7 +330,7 @@ async function Panel({ searchParams }: { searchParams: Promise<Params> }) {
         </p>
         <div className="overflow-x-auto">
           <table
-            className="w-full min-w-[56rem] text-left text-body-sm"
+            className="w-full min-w-[48rem] text-left text-body-sm"
             data-testid="selection-teams"
           >
             <thead className="text-eyebrow text-text-secondary uppercase">
@@ -344,9 +340,6 @@ async function Panel({ searchParams }: { searchParams: Promise<Params> }) {
                 </th>
                 <th scope="col" className="py-xs pr-md">
                   Team
-                </th>
-                <th scope="col" className="py-xs pr-md">
-                  Team code
                 </th>
                 <th scope="col" className="py-xs pr-md">
                   Submitted (IST)
@@ -366,7 +359,6 @@ async function Panel({ searchParams }: { searchParams: Promise<Params> }) {
                     {t.reference}
                   </th>
                   <td className="py-sm pr-md">{t.teamName}</td>
-                  <td className="font-mono py-sm pr-md">{formatTeamCode(t.code)}</td>
                   <td className="py-sm pr-md tabular-nums">
                     {t.submittedAt ? formatRegisteredAt(t.submittedAt) : "—"}
                   </td>

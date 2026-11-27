@@ -6,7 +6,7 @@ import { totp, totpWindow } from "./totp";
 
 /**
  * Event-day problem statement selection against the STAGING database: an organizer opens the
- * window, a team submits once (wrong code, then right code, then a repeat), the organizer
+ * window, a team submits once (unknown reference, then its own, then a repeat), the organizer
  * closes it, assigns a team that never submitted, publishes, checks the results page and
  * unpublishes again.
  *
@@ -125,16 +125,6 @@ async function confirmAndPress(page: Page, box: RegExp, button: string) {
   await page.getByRole("button", { name: button }).click();
 }
 
-function codeOf(page: Page, reference: string) {
-  return page
-    .getByTestId("selection-teams")
-    .getByRole("row")
-    .filter({ has: page.getByRole("rowheader", { name: reference, exact: true }) })
-    .locator("td")
-    .nth(1)
-    .textContent();
-}
-
 test("a team ranks the statements once; organizers close, assign, publish and unpublish", async ({
   page,
   context,
@@ -166,22 +156,18 @@ test("a team ranks the statements once; organizers close, assign, publish and un
     await expectAccessible(page);
   });
 
-  const codeA = ((await codeOf(page, a.reference)) ?? "").trim();
-  const codeB = ((await codeOf(page, b.reference)) ?? "").trim();
-  expect(codeA).toMatch(/^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/);
-
   const team = await context.newPage();
   collectErrors(team, errors);
-  await test.step("a wrong code is refused without saying which part is wrong", async () => {
+  await test.step("an unknown reference is refused", async () => {
     await team.goto("/statements");
     await expect(team.getByText("Selection open")).toBeVisible();
     await expect(team.getByTestId("ranking").getByRole("listitem")).toHaveCount(4);
     await expectAccessible(team);
-    await team.getByLabel("Team reference").fill(a.reference.toLowerCase());
-    await team.getByLabel("Team code").fill(codeB);
+    await team.getByLabel("Team reference").fill("FF27-9999");
     await team.getByRole("button", { name: "Review our choices" }).click();
+    await expect(team.getByTestId("review-reference")).toHaveText("FF27-9999");
     await team.getByRole("button", { name: "Submit our choices" }).click();
-    await expect(team.getByRole("alert")).toContainText("don't match");
+    await expect(team.getByRole("alert")).toContainText("can't find a registered team");
   });
 
   await test.step("the team reorders, reviews and submits", async () => {
@@ -191,7 +177,7 @@ test("a team ranks the statements once; organizers close, assign, publish and un
     await team.getByRole("button", { name: `Move ${last} up` }).click();
     await team.getByRole("button", { name: `Move ${last} up` }).click();
     await expect(items.nth(0)).toContainText(last);
-    await team.getByLabel("Team code").fill(codeA.toLowerCase());
+    await team.getByLabel("Team reference").fill(a.reference.toLowerCase());
     await team.getByRole("button", { name: "Review our choices" }).click();
     await expect(team.getByRole("heading", { name: "Check your choices" })).toBeFocused();
     await expect(team.getByTestId("review-order").getByRole("listitem").nth(0)).toContainText(last);
@@ -207,7 +193,6 @@ test("a team ranks the statements once; organizers close, assign, publish and un
   await test.step("a second submit from the same team changes nothing", async () => {
     await team.goto("/statements");
     await team.getByLabel("Team reference").fill(a.reference);
-    await team.getByLabel("Team code").fill(codeA);
     await team.getByRole("button", { name: "Review our choices" }).click();
     await team.getByRole("button", { name: "Submit our choices" }).click();
     await expect(
@@ -240,7 +225,8 @@ test("a team ranks the statements once; organizers close, assign, publish and un
     await expect(page.getByRole("status")).toContainText("Results are published");
     await team.goto("/statements/results");
     await expect(team.getByTestId("results")).toContainText(a.reference);
-    await expect(team.getByTestId("results")).toContainText(b.name);
+    await expect(team.getByTestId("results")).toContainText(b.reference);
+    await expect(team.getByTestId("results")).not.toContainText(b.name);
 
     const download = page.waitForEvent("download");
     await page.getByRole("link", { name: "Download choices (CSV)" }).click();

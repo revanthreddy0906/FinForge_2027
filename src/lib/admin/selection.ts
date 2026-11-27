@@ -5,7 +5,6 @@ export interface SelectionTeam {
   reference: string;
   teamName: string;
   leaderName: string;
-  code: string;
   /** Statement ids, 1st choice first; null if the team never submitted. */
   ranking: number[] | null;
   submittedAt: string | null;
@@ -26,7 +25,6 @@ export interface SelectionTeamRow {
   team_reference: string;
   team_name: string;
   leader_name: string;
-  team_code: string;
   ranking: number[] | null;
   submitted_at: string | null;
   assigned_statement: number | null;
@@ -39,18 +37,12 @@ export function toSelectionTeam(row: SelectionTeamRow): SelectionTeam {
     reference: row.team_reference,
     teamName: row.team_name,
     leaderName: row.leader_name,
-    code: row.team_code,
     ranking: row.ranking,
     submittedAt: row.submitted_at,
     assignedStatement: row.assigned_statement,
     assignedChoice: row.assigned_choice,
     assignedBy: row.assigned_by,
   };
-}
-
-/** "K7MQ2XRT" → "K7MQ-2XRT", easier to read off a slip. The form accepts either. */
-export function formatTeamCode(code: string): string {
-  return code.length === 8 ? `${code.slice(0, 4)}-${code.slice(4)}` : code;
 }
 
 /** "3 › 1 › 4 › 2", or an empty string. */
@@ -84,14 +76,6 @@ function csv(header: readonly string[], rows: readonly (readonly (string | numbe
   const lines = [header, ...rows].map((r) => r.map(csvCell).join(","));
   // Byte order mark so Excel opens the UTF-8 file with the right characters.
   return `﻿${lines.join("\r\n")}\r\n`;
-}
-
-/** For printing check-in slips: one row per paid team. */
-export function teamCodesCsv(teams: readonly SelectionTeam[]): string {
-  return csv(
-    ["Reference", "Team", "Leader", "Team code"],
-    teams.map((t) => [t.reference, t.teamName, t.leaderName, formatTeamCode(t.code)]),
-  );
 }
 
 /** Every paid team's choices and assignment, in submission order (never-submitted last). */

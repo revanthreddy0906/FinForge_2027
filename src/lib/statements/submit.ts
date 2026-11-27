@@ -16,7 +16,7 @@ export const initialSubmitResult: SubmitResult = { status: "idle" };
 
 /** Codes raised by public.submit_statement_choice (see supabase/migrations). */
 export type SubmitDbError =
-  "invalid_ranking" | "selection_not_open" | "selection_closed" | "invalid_proof" | "not_eligible";
+  "invalid_ranking" | "selection_not_open" | "selection_closed" | "team_not_found" | "not_eligible";
 
 export type SaveChoiceOutcome =
   | { ok: true; outcome: "submitted" | "already_submitted"; submittedAt: string | null }
@@ -35,10 +35,10 @@ export const submitCopy = {
   notOpen: "Problem statement selection hasn't opened yet. Wait for the organizers' announcement.",
   closed:
     "Problem statement selection has closed. If your team didn't submit, speak to the organizers' desk.",
-  invalidProof:
-    "That team reference and team code don't match. Check both on your check-in slip and try again.",
+  teamNotFound:
+    "We can't find a registered team with that reference. Check the reference from your registration and try again.",
   notEligible:
-    "This team can't choose a problem statement. Speak to the organizers' desk for help.",
+    "This team can't choose a problem statement because its registration isn't paid or was withdrawn. Speak to the organizers' desk.",
   unavailable:
     "We couldn't save your choices just now. Nothing was submitted, so please try again in a minute.",
 } as const;
@@ -69,11 +69,8 @@ export async function submitSelection(raw: unknown, deps: SubmitDeps): Promise<S
           };
     }
     switch (saved.code) {
-      case "invalid_proof":
-        return error(submitCopy.invalidProof, {
-          reference: submitCopy.invalidProof,
-          code: submitCopy.invalidProof,
-        });
+      case "team_not_found":
+        return error(submitCopy.teamNotFound, { reference: submitCopy.teamNotFound });
       case "invalid_ranking":
         return error(submitCopy.invalid, { ranking: "Put all four problem statements in order." });
       case "selection_not_open":

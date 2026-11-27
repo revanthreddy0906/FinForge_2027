@@ -64,7 +64,7 @@ async function Selection() {
       {status.state === "not_open" && (
         <Notice
           title="Selection hasn't opened yet"
-          body="The organizers will announce when it opens. Keep this page handy, then refresh it. Have your team reference and the team code from your check-in slip ready."
+          body="The organizers will announce when it opens. Keep this page handy, then refresh it. Have your team reference ready."
         />
       )}
 

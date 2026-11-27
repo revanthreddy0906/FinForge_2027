@@ -10,16 +10,16 @@ problem statements and submits once. Statements go out first come, first served 
 Only paid teams take part. Organizers open and close the window, and results go public only
 after an organizer presses Publish.
 
-Team references (`FF27-0080`) count up, so anyone can guess another team's reference. A wrong
-entry can't be undone. Confirmation email is still off because there is no sending domain, so
-a secret can't be sent by email.
+Team references (`FF27-0080`) count up, so anyone can guess another team's reference, and a
+wrong entry can't be undone.
 
 ## Decision
 
-- **Proof: reference plus a team code.** Each team gets a random 8-character code when it is
-  marked paid (`private.team_codes`, 32 symbols with no 0/O/1/I, 40 bits). Organizers download the
-  codes from the console and print them on check-in slips. A wrong reference and a wrong code give
-  the same error, so the form never confirms that a reference exists.
+- **Identity: the registration reference only** (Revanth, 27 Nov 2026). The reference is each
+  team's identity for the whole event, and teams are asked to type it carefully. A first version
+  used a random team code printed at check-in. Revanth chose the reference alone to keep event day
+  simple and accepted the risk below. The review step shows the reference large before the final
+  submit.
 - **One entry per team, in the database.** `public.statement_choices` uses the team as its
   primary key, and no role can update a submission. Repeating a submit returns
   `already_submitted` with the original time.
@@ -41,22 +41,26 @@ a secret can't be sent by email.
   `'use cache: remote'` functions with tags. Organizer actions expire the tags with `updateTag`,
   and a 15-second lifetime is the safety net. Submissions always check the database.
 - **Rate limits.** The venue Wi-Fi can put every team behind one public IP, so the only limit is
-  300 submits a minute per IP, which stops floods. There is no per-reference limit: references
-  are guessable, and such a limit would let anyone lock a rival team out while slots fill up.
-  Guessing a code (32^8, about 10^12) at 300 tries a minute is not practical. There is no
-  Turnstile either: the team code already blocks bots, and a challenge shown to a whole room on
-  one IP would slow real teams down.
+  300 submits a minute per IP, which stops floods. A per-reference limit would let anyone lock a
+  rival team out while slots fill up, so there is none. There is no Turnstile: a challenge shown
+  to a whole room on one IP would slow real teams down.
+- **Results show references only**, grouped by statement. No team names.
+- **Reopening.** Organizers can reopen the window after closing it (while results are
+  unpublished), for example if many teams couldn't submit for technical reasons. Teams that
+  already have an entry, including ones assigned by hand, keep it.
 - **Statement texts stay off the client.** They live in the server-only
   `src/config/problem-statements.ts` and render only while the window is open.
 
 ## Consequences
 
-- Slots are provisional (19 each). Change them in `private.problem_statements` and in the config
-  together.
+- Slots are provisional (19 each, 76 for 75 teams, so one statement ends with one team fewer).
+  Change them in `private.problem_statements` and in the config together.
+- Accepted risk: anyone who types another team's reference uses up that team's only entry. If it
+  happens, organizers can see the exact submit time; fixing it means removing the entry in the
+  database by hand.
 - Known risk: one person flooding from the venue Wi-Fi could hit the per-IP limit for everyone
   there for up to a minute. The fallback is that organizers see exact submit times and can assign
   by hand; turning on per-IP keys per device would need a separate design.
-- Teams need their check-in slip. A team that lost it gets its code again from the console.
 - If a cache expiry is missed, the public pages can lag by up to about 15 seconds. Submissions are
   never affected.
 - Staging e2e runs leave paid test teams and use up slots. Run `supabase/tests/cleanup_staging.sql`
