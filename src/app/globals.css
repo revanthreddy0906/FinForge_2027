@@ -293,6 +293,50 @@
   }
 }
 
+@keyframes vault-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes vault-jiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-6deg);
+  }
+  40% {
+    transform: rotate(5deg);
+  }
+  60% {
+    transform: rotate(-3deg);
+  }
+  80% {
+    transform: rotate(1.5deg);
+  }
+}
+
+@keyframes vault-jiggle-again {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-6deg);
+  }
+  40% {
+    transform: rotate(5deg);
+  }
+  60% {
+    transform: rotate(-3deg);
+  }
+  80% {
+    transform: rotate(1.5deg);
+  }
+}
+
 @layer components {
   .hero-rise,
   .hero-wipe,
@@ -358,6 +402,21 @@
     animation-delay: calc(var(--i, 0) * var(--stagger-base));
   }
 
+  /* Register "coming soon" vault: the dial ticks round once a minute, one notch at a time. */
+  .vault-spin {
+    animation: vault-spin 60s steps(60, end) infinite;
+  }
+
+  .vault-jiggle-a,
+  .vault-jiggle-b {
+    animation: vault-jiggle var(--duration-slow) var(--ease-out-quart);
+  }
+
+  /* Same keyframes under a second name, so alternating classes restarts the shake. */
+  .vault-jiggle-b {
+    animation-name: vault-jiggle-again;
+  }
+
   /* Timeline rail draws with scroll where the browser supports scroll-driven animations. */
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
@@ -382,6 +441,13 @@
 
     .seal-diamond {
       animation-delay: 0ms;
+    }
+
+    /* The vault stays still; pressing it only changes the line of text. */
+    .vault-spin,
+    .vault-jiggle-a,
+    .vault-jiggle-b {
+      animation: none;
     }
   }
 }

@@ -68,7 +68,7 @@ export function Hero() {
             ))}
           </dl>
           <div className="hero-rise flex flex-col gap-sm md:flex-row" style={i(6)}>
-            {event.registration === "open" ? (
+            {event.registration !== "closed" ? (
               <ButtonLink href={event.registrationPath}>Register your team</ButtonLink>
             ) : (
               <ButtonLink href="#timeline">Get the timeline</ButtonLink>

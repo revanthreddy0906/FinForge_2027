@@ -7,8 +7,9 @@ import { navLinks } from "@/config/nav";
 import { ButtonLink } from "./ui/button";
 import { Logo } from "./ui/logo";
 
+/** Register stays visible before registration opens too; /register shows the vault until then. */
 function NavCta({ className }: { className?: string }) {
-  return event.registration === "open" ? (
+  return event.registration !== "closed" ? (
     <ButtonLink href={event.registrationPath} className={className}>
       Register
     </ButtonLink>

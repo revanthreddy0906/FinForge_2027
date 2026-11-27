@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Footer } from "@/components/home/footer";
 import { RegistrationForm } from "@/components/register/registration-form";
+import { VaultDial } from "@/components/register/vault-dial";
 import { SiteNav } from "@/components/site-nav";
 import { Badge } from "@/components/ui/badge";
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonLink, buttonClasses } from "@/components/ui/button";
 import { event, teamSizeLabel, venueLabel } from "@/config/event";
 
 export const metadata: Metadata = {
@@ -28,6 +29,41 @@ function Closed({ title, body }: { title: string; body: string }) {
       <p className="max-w-[40rem] text-body-lg text-text-secondary">{body}</p>
       <ButtonLink href="/#timeline">See the timeline</ButtonLink>
     </div>
+  );
+}
+
+/** "Coming soon": the vault door. Register buttons stay live site-wide and land here. */
+function ComingSoon() {
+  return (
+    <section
+      aria-labelledby="vault-heading"
+      className="flex flex-col items-center gap-xl overflow-x-clip border border-border-frame px-lg py-xl text-center md:p-2xl"
+    >
+      <VaultDial />
+      <div className="flex flex-col items-center gap-md">
+        <h2 id="vault-heading" className="font-display text-heading-2 text-text-primary">
+          Registration unlocks soon
+        </h2>
+        <p className="max-w-[34rem] text-body-lg text-text-secondary">
+          We&apos;re running the final checks before the doors open. Get your team of{" "}
+          {teamSizeLabel} together, and we&apos;ll post the launch date on Instagram first.
+        </p>
+      </div>
+      <div className="flex flex-col items-center gap-sm md:flex-row">
+        <a
+          href={event.instagram.url}
+          className={buttonClasses("primary")}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <span>Follow @{event.instagram.handle} for the launch date</span>
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        <ButtonLink href="/#timeline" variant="ghost">
+          See the timeline
+        </ButtonLink>
+      </div>
+    </section>
   );
 }
 
@@ -63,12 +99,7 @@ export default function RegisterPage() {
             </p>
           </header>
 
-          {state === "coming-soon" && (
-            <Closed
-              title="Registration hasn't opened yet"
-              body="We'll announce the registration dates on the timeline and on Instagram. Get your team together in the meantime."
-            />
-          )}
+          {state === "coming-soon" && <ComingSoon />}
           {state === "closed" && (
             <Closed
               title="Registration has closed"
