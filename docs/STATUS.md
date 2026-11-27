@@ -120,6 +120,17 @@ Last updated: 2026-11-27
     refund (FF27-0066). CI (including the staging e2e flow) green on `main`
   - Migrations applied to staging and production (27 Nov 2026). Production advisors: only the Auth leaked-password-protection warning
 
+- **Load test (k6, staging)** (`docs/load-testing.md`, scripts in `loadtest/`, 27 Nov 2026)
+  - 1,000 visitors + 150 teams registering: 0 errors, page p95 300 ms, register submit p95
+    591 ms, 150/150 Razorpay test orders, idempotent retries, no duplicate orders
+  - Stress to 2,000 visitors: served p95 299 ms throughout; the only errors (1.6%) were the test
+    machine's own network at 2,000 connections, not Vercel
+  - 75 teams submitting in one second found Razorpay throttling (HTTP 429 above ~50 orders at
+    once); fixed with a 429-only retry, then 75/75 first try. Name race: exactly one winner
+  - Real rate limit checked: 6th submit a minute refused; forged `X-Forwarded-For` doesn't help
+  - Bypass for the tests is preview-only (`FINFORGE_LOAD_TEST_SECRET`, Turnstile test keys on one
+    branch, temporary Vercel automation bypass, now revoked). Test rows deleted from staging
+
 ## Pending
 
 - Content TODOs: exact dates, registration window, tracks, prize breakdown, sponsors, official logo SVG
@@ -145,7 +156,10 @@ Last updated: 2026-11-27
 - Payments: test card payments couldn't be completed by the headless test browser (Continue
   does nothing); netbanking test payments work. Try the test card by hand once.
 - Rate limits: the form allows 5 registrations a minute per IP. Teams on one campus Wi-Fi share
-  an IP; check this in the load test.
+  an IP, so a 6th team from one campus in the same minute is asked to wait a minute. Consider
+  raising the register limit (decision for Revanth, see `docs/load-testing.md`).
+- Load test clean-up left for Revanth: delete the four preview variables scoped to the branch
+  `loadtest/k6` (Vercel > Settings > Environment Variables). The branch itself is deleted.
 
 - Database: before registration opens, restart the team reference counter (test runs use up
   numbers): `alter table public.teams alter column seq restart with 1;` when the table is empty.
