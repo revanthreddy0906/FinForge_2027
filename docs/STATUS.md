@@ -36,7 +36,8 @@ Last updated: 2026-11-27
 - **Event content from the official FinForge 2027 document** (27 Nov 2026): dates 20–21 March
   2027 (`startDate`/`endDate` set, ready for JSON-LD in the SEO step), two-day festival with a
   24-hour hackathon, 75 teams, 25 colleges, prize extras, "Why FinForge", theme copy with the
-  problem-in-numbers stats and sources, the four "Come prepared" areas, judging criteria, FAQ
+  problem-in-numbers stats and sources, the four "Come prepared" areas, judging criteria, FAQ,
+  club contact email and organizer phone numbers (sponsors section and footer)
 
 - **Step 5, Supabase schema** (ADR `docs/adr/0001-registration-database.md`)
   - Tables `teams`, `team_members`, `contact_messages`, view `admin_registrations`; private
@@ -174,10 +175,10 @@ Last updated: 2026-11-27
 - Content TODOs: registration window, results date, tracks and problem statements (the document
   says they are revealed minutes before the timer starts), prize breakdown, sponsors, About
   CBIT FinFoundry and club vision (empty in the document), official logo SVG
-- Open questions from the event document (27 Nov 2026), for Revanth: public contact email
-  (document: the club Gmail; site still reveals the organizer email), whether to set the database
-  team cap `max_teams` to 75 (currently no cap), and the 450–500 participants claim (75 teams of
-  up to 5 is at most 375; not shown on the site)
+- Event document decisions (Revanth, 27 Nov 2026): dates 20–21 March 2027 confirmed; the public
+  contact is the club address (click to reveal) plus organizers Pranathi Vemuri and Revanth
+  Reddy by phone; no database team cap for now (`max_teams` stays null); the 450–500
+  participants figure stays off the site
 - Code Connect: blocked by the Figma plan (needs a Dev/Full seat on Organization). Mapping table is
   ready in `docs/design-system.md`.
 - Add Lighthouse CI to the pipeline

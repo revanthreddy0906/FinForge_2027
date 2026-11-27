@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { event, venueLabel } from "@/config/event";
 import { navLinks } from "@/config/nav";
+import { ContactPhones } from "../contact-phones";
 import { Logo } from "../ui/logo";
 
 const linkClass =
@@ -44,6 +45,7 @@ export function Footer() {
                   </a>
                 </li>
               </ul>
+              <ContactPhones />
             </div>
           </nav>
         </div>

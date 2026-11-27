@@ -85,6 +85,12 @@ export const event = {
   // TODO: sponsors.
   sponsors: [] as readonly { name: string; url: string }[],
 
+  /** Organizer contacts from the event document, in the order they should appear. */
+  contacts: [
+    { name: "Pranathi Vemuri", phone: "+919866649095", phoneLabel: "98666 49095" },
+    { name: "Revanth Reddy", phone: "+919866403464", phoneLabel: "98664 03464" },
+  ],
+
   instagram: { handle: "cbit_finfoundry", url: "https://www.instagram.com/cbit_finfoundry/" },
 
   timeline: [

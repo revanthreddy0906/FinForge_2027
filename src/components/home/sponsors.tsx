@@ -1,5 +1,6 @@
 import { event } from "@/config/event";
 import { ContactEmail } from "../contact-email";
+import { ContactPhones } from "../contact-phones";
 import { SectionHeader } from "../ui/section-header";
 import { Section } from "./section";
 
@@ -12,7 +13,7 @@ export function Sponsors() {
         index="05"
         eyebrow="Sponsors"
         title={hasSponsors ? "Backed by" : "Partners to be announced"}
-        description="Want your team in front of students building fraud and security tools? Write to the organisers."
+        description="Want your team in front of students building fraud and security tools? Write to the club or call the organisers."
       />
       <ul className="grid grid-cols-2 gap-lg md:grid-cols-4">
         {hasSponsors
@@ -39,8 +40,9 @@ export function Sponsors() {
               </li>
             ))}
       </ul>
-      <div data-reveal>
+      <div className="flex flex-col gap-lg md:flex-row md:items-center md:gap-2xl" data-reveal>
         <ContactEmail />
+        <ContactPhones />
       </div>
     </Section>
   );
