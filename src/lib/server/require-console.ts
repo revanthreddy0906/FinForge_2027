@@ -3,7 +3,14 @@ import { redirect } from "next/navigation";
 import { readAdminSession } from "./admin-session";
 
 /** The verified organizer's access token, or a redirect to sign-in or session refresh. */
-export async function requireConsole(from: "/admin" | "/admin/export"): Promise<{
+export async function requireConsole(
+  from:
+    | "/admin"
+    | "/admin/export"
+    | "/admin/statements"
+    | "/admin/statements/codes"
+    | "/admin/statements/export",
+): Promise<{
   email: string;
   accessToken: string;
 }> {

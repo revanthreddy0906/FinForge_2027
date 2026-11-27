@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { TeamsTable } from "@/components/admin/teams-table";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -84,6 +85,9 @@ async function Console() {
           <a href="/admin/export" className={buttonClasses("primary")} download>
             Download CSV
           </a>
+          <Link href="/admin/statements" className={buttonClasses("secondary")}>
+            Problem statements
+          </Link>
           <SignOut />
         </div>
       </div>
