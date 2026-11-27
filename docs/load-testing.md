@@ -49,11 +49,10 @@ reason code.
 
 ### Notes and open points
 
-- **Campus Wi-Fi and the 5-a-minute limit.** Teams on one college network share one public IP,
-  and the form allows 5 submits a minute per IP (Turnstile already stops bots). If 6+ teams from
-  one campus submit in the same minute, the 6th is asked to wait a minute. Consider raising the
-  register limit (for example to 20 a minute); it is a one-line change in
-  `src/app/register/actions.ts` (the limit argument of `allowRequest`). Not changed here: it's a product decision.
+- **Campus Wi-Fi.** Teams on one college network share one public IP. The form allowed 5 submits
+  a minute per IP when these tests ran; on Revanth's call it is now **20 a minute**
+  (`src/app/register/actions.ts`), with Turnstile still checking every submit. Admin login stays
+  at 5. The rate-limit check above ran with the old limit of 5.
 - A freshly deployed build was slower on its first burst (spike submit p95 4.3 s), then 2.95 s
   once warm. Open the site once after each deploy before announcing registration.
 - Vercel usage: the runs sent about 275,000 requests to the preview. On the Hobby plan, check the

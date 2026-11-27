@@ -47,7 +47,7 @@ Last updated: 2026-11-27
   - Form in the Secure Ledger style: team, college, 2 to 5 members, leader mobile, privacy note
     with consent, Cloudflare Turnstile; inline errors plus an error summary; reference shown on
     success
-  - Server action: registration state check, rate limit (5/min per IP, Upstash; in-memory only
+  - Server action: registration state check, rate limit (20/min per IP since 27 Nov 2026, Upstash; in-memory only
     for local tests), Zod validation shared with the form, Turnstile verification, save through
     `register_team`, friendly messages for every database rule
   - No database read on render; `NEXT_PUBLIC_REGISTRATION_STATE` can force a
@@ -155,9 +155,8 @@ Last updated: 2026-11-27
   Vercel Authentication, so a staging webhook URL needs the protection bypass query parameter.
 - Payments: test card payments couldn't be completed by the headless test browser (Continue
   does nothing); netbanking test payments work. Try the test card by hand once.
-- Rate limits: the form allows 5 registrations a minute per IP. Teams on one campus Wi-Fi share
-  an IP, so a 6th team from one campus in the same minute is asked to wait a minute. Consider
-  raising the register limit (decision for Revanth, see `docs/load-testing.md`).
+- Rate limits: the form allows 20 registrations a minute per IP (raised from 5 on 27 Nov 2026,
+  Revanth's call, because teams on one campus Wi-Fi share an IP). Admin login stays at 5.
 - Load test clean-up left for Revanth: delete the four preview variables scoped to the branch
   `loadtest/k6` (Vercel > Settings > Environment Variables). The branch itself is deleted.
 

@@ -12,6 +12,12 @@ import { allowRequest } from "@/lib/server/rate-limit";
 import { saveTeam } from "@/lib/server/save-team";
 import { verifyTurnstile } from "@/lib/server/turnstile";
 
+/**
+ * Registrations allowed per minute per IP. Teams on one college Wi-Fi share an IP, so this is
+ * higher than the 5 a minute elsewhere; Turnstile still stops bots on every submit.
+ */
+const REGISTER_LIMIT_PER_MINUTE = 20;
+
 /** Server action behind the registration form. */
 export async function registerAction(
   _previous: RegisterResult,
@@ -27,7 +33,7 @@ export async function registerAction(
   });
   return registerTeam(formDataToInput(formData), turnstileTokenFrom(formData), ip, {
     registrationState: () => event.registration,
-    allowRequest: () => allowRequest("register", limitKey),
+    allowRequest: () => allowRequest("register", limitKey, REGISTER_LIMIT_PER_MINUTE),
     verifyHuman: verifyTurnstile,
     saveTeam,
     startPayment: (teamId) => startPayment(teamId, startDeps),

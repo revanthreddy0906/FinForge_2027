@@ -88,6 +88,7 @@ test.describe("registration page", () => {
   test("keeps everything typed when the server can't save, and rate limits repeats", async ({
     page,
   }) => {
+    test.setTimeout(90_000); // 21 submits to reach the limit
     await page.goto("/register");
     await fillTeam(page, team);
     const submit = page.getByRole("button", { name: "Register team" });
@@ -109,8 +110,8 @@ test.describe("registration page", () => {
     await expect(page.getByLabel("Team name")).toHaveValue(team.teamName);
     await expect(page.locator("#f-members-1-email")).toHaveValue("vik@example.com");
 
-    // 5 attempts per minute per IP: the 6th is refused.
-    for (let i = 0; i < 4; i++) await submitOnce();
+    // 20 attempts per minute per IP: the 21st is refused.
+    for (let i = 0; i < 19; i++) await submitOnce();
     await submitOnce();
     await expect(alert).toContainText("Too many attempts");
   });

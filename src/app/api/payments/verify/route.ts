@@ -9,7 +9,7 @@ import { allowRequest } from "@/lib/server/rate-limit";
 import { razorpayEnv } from "@/lib/server/razorpay-env";
 
 /**
- * Higher than the form's 5 a minute: these people have already paid, a college network puts many
+ * Higher than the form's 20 a minute: these people have already paid, a college network puts many
  * of them behind one IP, and a forged request is cheap to reject (signature check, no Razorpay call).
  */
 const VERIFY_LIMIT_PER_MINUTE = 30;
