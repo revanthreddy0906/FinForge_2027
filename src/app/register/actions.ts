@@ -3,7 +3,9 @@
 import { event } from "@/config/event";
 import { formDataToInput, turnstileTokenFrom } from "@/lib/registration/form-data";
 import { registerTeam, type RegisterResult } from "@/lib/registration/register";
+import { headers } from "next/headers";
 import { clientIp } from "@/lib/server/client-ip";
+import { LOAD_TEST_CLIENT_HEADER, LOAD_TEST_HEADER, rateLimitKey } from "@/lib/server/load-test";
 import { startPayment } from "@/lib/payments/flow";
 import { startDeps } from "@/lib/server/payments";
 import { allowRequest } from "@/lib/server/rate-limit";
@@ -16,9 +18,16 @@ export async function registerAction(
   formData: FormData,
 ): Promise<RegisterResult> {
   const ip = await clientIp();
+  const h = await headers();
+  const limitKey = rateLimitKey(ip, {
+    vercelEnv: process.env.VERCEL_ENV,
+    secret: process.env.FINFORGE_LOAD_TEST_SECRET,
+    header: h.get(LOAD_TEST_HEADER),
+    client: h.get(LOAD_TEST_CLIENT_HEADER),
+  });
   return registerTeam(formDataToInput(formData), turnstileTokenFrom(formData), ip, {
     registrationState: () => event.registration,
-    allowRequest: (requestIp) => allowRequest("register", requestIp),
+    allowRequest: () => allowRequest("register", limitKey),
     verifyHuman: verifyTurnstile,
     saveTeam,
     startPayment: (teamId) => startPayment(teamId, startDeps),
