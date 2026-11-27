@@ -120,6 +120,7 @@ async function expectAccessible(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
+// Next.js adds its own role="alert" route announcer, so alerts are matched by their text.
 async function confirmAndPress(page: Page, box: RegExp, button: string) {
   await page.getByLabel(box).check();
   await page.getByRole("button", { name: button }).click();
@@ -150,7 +151,7 @@ test("a team ranks the statements once; organizers close, assign, publish and un
         el.removeAttribute("required");
       });
       await page.getByRole("button", { name: "Open selection" }).click();
-      await expect(page.getByRole("alert")).toContainText("Tick the box");
+      await expect(page.getByRole("alert").filter({ hasText: "Tick the box" })).toBeVisible();
       await confirmAndPress(page, /Open selection now/, "Open selection");
       await expect(page.getByRole("status")).toContainText("Selection is open");
     }
@@ -169,7 +170,9 @@ test("a team ranks the statements once; organizers close, assign, publish and un
     await team.getByRole("button", { name: "Review our choices" }).click();
     await expect(team.getByTestId("review-reference")).toHaveText("FF27-9999");
     await team.getByRole("button", { name: "Submit our choices" }).click();
-    await expect(team.getByRole("alert")).toContainText("can't find a registered team");
+    await expect(
+      team.getByRole("alert").filter({ hasText: "can't find a registered team" }),
+    ).toBeVisible();
   });
 
   await test.step("the team reorders, reviews and submits", async () => {
