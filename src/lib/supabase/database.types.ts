@@ -89,6 +89,44 @@ export type Database = {
           },
         ];
       };
+      statement_choices: {
+        Row: {
+          assigned_at: string | null;
+          assigned_by: string | null;
+          assigned_choice: number | null;
+          assigned_statement: number | null;
+          ranking: number[] | null;
+          submitted_at: string | null;
+          team_id: string;
+        };
+        Insert: {
+          assigned_at?: string | null;
+          assigned_by?: string | null;
+          assigned_choice?: number | null;
+          assigned_statement?: number | null;
+          ranking?: number[] | null;
+          submitted_at?: string | null;
+          team_id: string;
+        };
+        Update: {
+          assigned_at?: string | null;
+          assigned_by?: string | null;
+          assigned_choice?: number | null;
+          assigned_statement?: number | null;
+          ranking?: number[] | null;
+          submitted_at?: string | null;
+          team_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "statement_choices_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: true;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       team_members: {
         Row: {
           created_at: string;
@@ -195,6 +233,39 @@ export type Database = {
       };
     };
     Functions: {
+      admin_selection_settings: {
+        Args: never;
+        Returns: {
+          results_published: boolean;
+          selection_state: string;
+        }[];
+      };
+      admin_selection_teams: {
+        Args: never;
+        Returns: {
+          assigned_by: string;
+          assigned_choice: number;
+          assigned_statement: number;
+          leader_name: string;
+          ranking: number[];
+          submitted_at: string;
+          team_code: string;
+          team_name: string;
+          team_reference: string;
+        }[];
+      };
+      admin_statement_slots: {
+        Args: never;
+        Returns: {
+          assigned: number;
+          slots: number;
+          statement_id: number;
+        }[];
+      };
+      assign_statement_by_hand: {
+        Args: { p_reference: string; p_statement: number };
+        Returns: undefined;
+      };
       current_user_is_admin: { Args: never; Returns: boolean };
       mark_order_paid: {
         Args: {
@@ -224,6 +295,14 @@ export type Database = {
           team_reference: string;
         }[];
       };
+      published_results: {
+        Args: never;
+        Returns: {
+          statement_id: number;
+          team_name: string;
+          team_reference: string;
+        }[];
+      };
       record_payment_order: {
         Args: {
           p_amount_paise: number;
@@ -238,6 +317,25 @@ export type Database = {
           created: boolean;
           reference: string;
           team_id: string;
+        }[];
+      };
+      selection_status: {
+        Args: never;
+        Returns: {
+          results_published: boolean;
+          selection_state: string;
+        }[];
+      };
+      set_results_published: {
+        Args: { p_published: boolean };
+        Returns: undefined;
+      };
+      set_selection_state: { Args: { p_state: string }; Returns: undefined };
+      submit_statement_choice: {
+        Args: { p_code: string; p_ranking: number[]; p_reference: string };
+        Returns: {
+          outcome: string;
+          submitted_at: string;
         }[];
       };
     };
