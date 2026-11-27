@@ -33,16 +33,20 @@ async function call(
     cache: "no-store",
   });
   if (!res.ok) {
-    // Log the status and Razorpay's error code only; never the request (it holds personal data).
-    const code = await res
+    // Log the HTTP status and Razorpay's error code and reason (short machine codes) only; never
+    // the request or the description (they can hold personal data).
+    const error = await res
       .json()
       .then(
         (b: unknown) =>
-          z.object({ error: z.object({ code: z.string() }) }).safeParse(b).data?.error.code,
+          z
+            .object({ error: z.object({ code: z.string(), reason: z.string().nullish() }) })
+            .safeParse(b).data?.error,
       )
       .catch(() => undefined);
+    const reason = error?.reason ? ` (${error.reason.slice(0, 60)})` : "";
     throw new RazorpayError(
-      `Razorpay ${init.method} ${path.split("/")[2] ?? ""} failed: ${code ?? "unknown"}`,
+      `Razorpay ${init.method} ${path.split("/")[2] ?? ""} failed: HTTP ${String(res.status)} ${error?.code ?? "unknown"}${reason}`,
       res.status,
     );
   }
